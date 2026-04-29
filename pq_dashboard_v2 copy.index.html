@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PQ Report Dashboard — DaMENSCH</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size:14px}
+.topbar{background:#0f172a;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:17px;font-weight:700}
+.topbar .sub{font-size:11px;opacity:.6;margin-top:2px}
+.upload-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.upload-box{background:#1e293b;border:1.5px dashed #475569;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12px;color:#94a3b8;transition:all .2s;text-align:center;min-width:120px}
+.upload-box:hover{border-color:#3b82f6;color:#60a5fa}
+.upload-box.loaded{border-color:#22c55e;color:#22c55e;border-style:solid}
+.upload-box input{display:none}
+.gen-btn{background:#ef4444;color:#fff;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;transition:all .2s}
+.gen-btn:disabled{opacity:.35;cursor:not-allowed}
+.gen-btn:not(:disabled):hover{background:#dc2626}
+.tabs{background:#fff;border-bottom:2px solid #e5e7eb;padding:0 20px;display:flex;overflow-x:auto;position:sticky;top:57px;z-index:99}
+.tab{padding:13px 16px;cursor:pointer;font-size:12.5px;font-weight:500;color:#64748b;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tab:hover{color:#0f172a}
+.tab.active{color:#0f172a;border-bottom-color:#ef4444;font-weight:700}
+.content{padding:20px 24px;max-width:1440px;margin:0 auto}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:#fff;border-radius:10px;padding:15px 16px;border:1px solid #e5e7eb;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--ac,#cbd5e1)}
+.kpi.red{--ac:#ef4444}.kpi.green{--ac:#22c55e}.kpi.blue{--ac:#3b82f6}.kpi.amber{--ac:#f59e0b}.kpi.purple{--ac:#8b5cf6}.kpi.teal{--ac:#14b8a6}.kpi.rose{--ac:#f43f5e}
+.kpi .lbl{font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.kpi .val{font-size:22px;font-weight:700;color:#0f172a;line-height:1}
+.kpi.red .val{color:#dc2626}.kpi.green .val{color:#16a34a}.kpi.blue .val{color:#1d4ed8}.kpi.amber .val{color:#d97706}.kpi.purple .val{color:#7c3aed}.kpi.teal .val{color:#0d9488}.kpi.rose .val{color:#e11d48}
+.kpi .sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e5e7eb;margin-bottom:16px}
+.card:last-child{margin-bottom:0}
+.card h3{font-size:11.5px;font-weight:700;color:#64748b;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em}
+.ch200{position:relative;height:200px}
+.ch260{position:relative;height:260px}
+.ch300{position:relative;height:300px}
+.ch360{position:relative;height:360px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+table th{text-align:left;padding:9px 10px;background:#f8fafc;font-weight:700;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#374151}
+table tr:hover td{background:#fafafa}
+table tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.bg{background:#dcfce7;color:#15803d}.br{background:#fee2e2;color:#b91c1c}.ba{background:#fef3c7;color:#b45309}.bb{background:#dbeafe;color:#1e40af}.bp{background:#ede9fe;color:#6d28d9}.bgr{background:#f1f5f9;color:#475569}
+.panel{display:none}.panel.active{display:block}
+.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1e40af;margin-bottom:14px}
+.warn{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#854d0e;margin-bottom:14px}
+.upload-zone{background:#fff;border:2px dashed #cbd5e1;border-radius:12px;padding:52px 24px;text-align:center;color:#94a3b8;cursor:pointer;transition:all .2s}
+.upload-zone:hover{border-color:#3b82f6;color:#3b82f6;background:#f8faff}
+.pct-high{color:#dc2626;font-weight:700}.pct-mid{color:#d97706;font-weight:600}.pct-low{color:#16a34a}.pct-zero{color:#e2e8f0}
+input[type=text]{padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;width:200px}
+select{padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;cursor:pointer}
+@media(max-width:768px){.grid2,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>&#128202; PQ Report Dashboard — DaMENSCH</h1>
+    <div class="sub" id="rpt-sub">Upload Flowcall CS file + Sales file to generate report</div>
+  </div>
+  <div class="upload-row">
+    <label class="upload-box" id="lbl-cs">
+      <div>&#128196; Flowcall CS File</div>
+      <div id="cs-st" style="font-size:10px;margin-top:2px">Not loaded</div>
+      <input type="file" id="f-cs" accept=".csv,.xlsx,.xls">
+    </label>
+    <label class="upload-box" id="lbl-sales">
+      <div>&#128200; Sales File</div>
+      <div id="sales-st" style="font-size:10px;margin-top:2px">Not loaded</div>
+      <input type="file" id="f-sales" accept=".csv,.xlsx,.xls">
+    </label>
+    <button class="gen-btn" id="gen-btn" onclick="generate()" disabled>Generate Report</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">Overview</div>
+  <div class="tab" onclick="showTab('mainsheet',this)">Main Sheet</div>
+  <div class="tab" onclick="showTab('finalsheet',this)">Final Sheet</div>
+  <div class="tab" onclick="showTab('fit',this)">FIT vs Non-FIT</div>
+  <div class="tab" onclick="showTab('categories',this)">Categories</div>
+  <div class="tab" onclick="showTab('mapping',this)">Product Mapping</div>
+</div>
+
+<div class="content">
+
+<div id="panel-overview" class="panel active">
+  <div id="no-data" class="upload-zone" onclick="document.getElementById('f-cs').click()">
+    <div style="font-size:40px">&#128202;</div>
+    <p style="font-size:16px;font-weight:600;margin:12px 0 6px;color:#334155">Upload Flowcall CS + Sales to generate PQ Report</p>
+    <span style="font-size:12px">Master file baked in — no manual mapping needed</span>
+  </div>
+  <div id="ov-data" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:12px;color:#64748b;font-weight:500">Filter by month:</span>
+      <select id="month-sel" onchange="applyFilter()">
+        <option value="all">All Months</option>
+      </select>
+      <span id="filter-info" style="font-size:11px;color:#94a3b8"></span>
+    </div>
+    <div class="kpi-row" id="kpi-ov"></div>
+    <div class="grid3">
+      <div class="card"><h3>FIT vs Non-FIT</h3><div class="ch200"><canvas id="c-fit-pie"></canvas></div></div>
+      <div class="card"><h3>Top complaint categories</h3><div class="ch200"><canvas id="c-cat-bar"></canvas></div></div>
+      <div class="card"><h3>Monthly PQ trend</h3><div class="ch200"><canvas id="c-monthly"></canvas></div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>Top 10 products by PQ rate %</h3><div id="top-rate"></div></div>
+      <div class="card"><h3>Top 10 products by complaint volume</h3><div id="top-vol"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="panel-mainsheet" class="panel">
+  <div class="kpi-row" id="kpi-main" style="grid-template-columns:repeat(6,1fr)"></div>
+  <div class="card">
+    <h3>Main Sheet — all products vs sales</h3>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <input type="text" id="srch-main" placeholder="Search product..." onkeyup="filterMain()">
+      <span style="font-size:11px;color:#94a3b8"><span id="main-cnt">0</span> products</span>
+    </div>
+    <table><thead><tr><th>#</th><th>Product (CS Name)</th><th>Total CS Tickets</th><th>Total Sales</th><th>Ticket Rate %</th><th>PQ Complaints</th><th>PQ Rate %</th><th>FIT</th><th>Non-FIT</th><th>FIT %</th></tr></thead>
+    <tbody id="main-tbody"></tbody></table>
+  </div>
+</div>
+
+<div id="panel-finalsheet" class="panel">
+  <div class="info">Replicates your Final Sheet — each cell = complaint count / total sales for that product x category. Red = high rate, green = low.</div>
+  <div class="card">
+    <h3>Final Sheet — complaint rate by product x category</h3>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <input type="text" id="srch-final" placeholder="Search product..." onkeyup="filterFinal()">
+      <label style="font-size:12px;color:#64748b;display:flex;align-items:center;gap:4px">
+        <input type="checkbox" id="hide-zero" onchange="filterFinal()"> Hide zero rows
+      </label>
+    </div>
+    <div style="overflow-x:auto"><table><thead id="fin-head"></thead><tbody id="fin-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<div id="panel-fit" class="panel">
+  <div class="kpi-row" id="kpi-fit" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="grid2">
+    <div class="card"><h3>FIT vs Non-FIT by top 20 products</h3><div class="ch360"><canvas id="c-fit-stack"></canvas></div></div>
+    <div class="card"><h3>FIT breakdown table</h3>
+      <table><thead><tr><th>Product</th><th>Total PQ</th><th>FIT</th><th>FIT %</th><th>Non-FIT</th><th>Non-FIT %</th></tr></thead>
+      <tbody id="fit-tbody"></tbody></table>
+    </div>
+  </div>
+  <div class="card"><h3>FIT subcategories — Fit Tight vs Fit Loose vs Fit/Size by product (top 15)</h3><div class="ch260"><canvas id="c-fit-sub"></canvas></div></div>
+</div>
+
+<div id="panel-categories" class="panel">
+  <div class="kpi-row" id="kpi-cats"></div>
+  <div class="grid2">
+    <div class="card"><h3>All categories breakdown</h3><div class="ch300"><canvas id="c-cats"></canvas></div></div>
+    <div class="card"><h3>Monthly category trend</h3><div class="ch300"><canvas id="c-cat-trend"></canvas></div></div>
+  </div>
+  <div class="card">
+    <h3>Top 15 products for selected category</h3>
+    <div style="margin-bottom:10px"><select id="cat-sel" onchange="renderCatProds()"><option value="">Select a category...</option></select></div>
+    <table><thead><tr><th>#</th><th>Product</th><th>Complaints</th><th>Sales</th><th>Rate %</th></tr></thead><tbody id="cat-prod-tbody"></tbody></table>
+  </div>
+</div>
+
+<div id="panel-mapping" class="panel">
+  <div class="warn">Products where CS name and Sales name don't match exactly. Fuzzy matching applied automatically. Review "No Match" rows — these products have no sales data and their complaint rates can't be calculated.</div>
+  <div class="kpi-row" id="kpi-map" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="card">
+    <h3>Product name mapping — Flowcall CS vs Sales</h3>
+    <table><thead><tr><th>CS Product Name (Flowcall DW)</th><th>CS Tickets</th><th>PQ Complaints</th><th>Matched Sales Name</th><th>Sales Items</th><th>Match Type</th></tr></thead>
+    <tbody id="map-tbody"></tbody></table>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ─── MASTER MAPPINGS — BAKED IN ──────────────────────────────────────────────
+// Flowcall L2 values → PQ category
+const MASTER = {
+  // FIT Related
+  'fit too tight':                         {cat:'Fit Tight',     cat2:'FIT Related Complaints'},
+  'fit too loose':                         {cat:'Fit Loose',     cat2:'FIT Related Complaints'},
+  'fit too tight exchanges':               {cat:'Fit Tight',     cat2:'FIT Related Complaints'},
+  'fit too loose exchanges':               {cat:'Fit Loose',     cat2:'FIT Related Complaints'},
+  'not satisfied with fit and design':     {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'size guidance':                         {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'want to change size':                   {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'size exchanges':                        {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'size not available exchanges':          {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'bubbles after wash exchanges':          {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  // Fabric Quality
+  'not satisfied with fabric':             {cat:'Fabric Quality',cat2:'Non-FIT Related Complaints'},
+  'not satisfied with fabric exchanges':   {cat:'Fabric Quality',cat2:'Non-FIT Related Complaints'},
+  'fabric inquiry':                        {cat:'Fabric Quality',cat2:'Non-FIT Related Complaints'},
+  // Colour
+  'not satisfied with color':              {cat:'Appearance (Colour/design)', cat2:'Non-FIT Related Complaints'},
+  'not satisfied with color exchanges':    {cat:'Appearance (Colour/design)', cat2:'Non-FIT Related Complaints'},
+  'color fading on wash':                  {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'want to change color':                  {cat:'Appearance (Colour/design)', cat2:'Non-FIT Related Complaints'},
+  // Defects
+  'defect in product faded':               {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'defect in product faded 500d':          {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'defect in product faded exchanges':     {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'defect in product hole in product':     {cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'defect in product hole in product exchanges':{cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'defect in product stain or used':       {cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'defect in product stitching':           {cat:'Stitching Issue',cat2:'Non-FIT Related Complaints'},
+  'defect in product stitching exchanges': {cat:'Stitching Issue',cat2:'Non-FIT Related Complaints'},
+  'damage product packaged received':      {cat:'Packaging',     cat2:'Non-FIT Related Complaints'},
+  'damage product package received exchanges':{cat:'Packaging',  cat2:'Non-FIT Related Complaints'},
+  // Incorrect item
+  'incorrect item product received exchanges':{cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'difference between products':           {cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  // Others (PQ-related)
+  'order return exchange':                 {cat:'Others',        cat2:'Non-FIT Related Complaints'},
+};
+
+const ALL_CATS = ['Fit Tight','Fit Loose','Fit/Size','Fabric Quality','Colour Fade','Appearance (Colour/design)','Stitching Issue','Product defect (Hole/Stain/used)','Packaging','Shrinkage','Stretching','Waistband/ELASTIC','Pilling/Hairyness','Others'];
+const FIT_CATS = ['Fit Tight','Fit Loose','Fit/Size'];
+const CAT_COLORS = {'Fit Tight':'#ef4444','Fit Loose':'#f97316','Fit/Size':'#f59e0b','Fabric Quality':'#8b5cf6','Colour Fade':'#06b6d4','Appearance (Colour/design)':'#ec4899','Stitching Issue':'#14b8a6','Shrinkage':'#6366f1','Stretching':'#84cc16','Product defect (Hole/Stain/used)':'#dc2626','Pilling/Hairyness':'#0ea5e9','Packaging':'#f43f5e','Waistband/ELASTIC':'#a78bfa','Others':'#94a3b8'};
+
+// PRODUCT NAME MAPPING — CS Flowcall → Sales category_l3
+const PROD_MAP = {
+  'deo soft solid trunk':'Deo-Soft Solid Trunk',
+  'deo soft solid brief':'Deo-Soft Solid Brief',
+  'deo soft solid boxer brief':'Deo-Soft Solid Boxer Brief',
+  'deo soft melange trunk':'Deo-Soft Supima Printed Trunk',
+  'deo soft melange boxer brief':'Deo-Soft Supima Printed Boxer Brief',
+  'deo soft printed brief':'Deo-Soft Supima Printed Brief',
+  'deo soft printed boxer brief':'Deo-Soft Supima Printed Boxer Brief',
+  'deo soft supima solid trunk':'Deo-Soft Supima Solid Trunk',
+  'deo soft supima briefs core pop bold':'Deo-Soft Supima Pop Bold Brief',
+  'deo soft supima trunk core solid urbane':'Deo-Soft Supima Solid Trunk',
+  'deo soft trunks core print abstract':'Deo Soft Printed Trunk',
+  'deo soft trunks core solid ascent':'Deo-Soft Solid Trunk',
+  'deo cotton basic solid trunk':'Deo-Cotton Basic Solid Trunk',
+  'deo cotton basic solid brief':'Deo-Cotton Basic Solid Brief',
+  'deo cotton tonal solid trunk':'Deo-Cotton Tonal Solid Trunk',
+  'deo cotton briefs basic print basic':'Deo-Cotton Basic Printed Brief',
+  'unreal trunk':'Premium Solid Trunk',
+  'unreal brief':'Premium Solid Brief',
+  'cosmos trunk':'EPP Solid Trunk',
+  'cosmos brief':'EPP Solid Brief',
+  'feel mint solid trunk':'Feel Mint Solid Brief',
+  'feel mint round vest':'Neo-Cotton Round Vest',
+  'neo skin bamboo round vest':'Bamboo Round Vest',
+  'neo skin bamboo square vest':'Bamboo Square Vest Color',
+  'neo cotton round vest':'Neo-Cotton Round Vest',
+  'bamboo round vest color':'Bamboo Round Vest Color',
+  'bamboo round vest white':'Bamboo Round Vest White',
+  'bamboo square vest color':'Bamboo Square Vest Color',
+  'bamboo square vest white':'Bamboo Square Vest White',
+  'shapewear':'Sleeveless Shapewear Vest',
+  'shapewear trunk':'Bonded Solid Trunks',
+  'neo-cottonpinstripe vest':'Pinstripe Neo-Cotton Vest',
+  'breeze ultra light solid inner boxer':'Breeze Ultra-Light Solid Inner Boxer',
+  'breeze ultra light printed boxer shorts':'Breeze Ultra-Light Printed Boxer Shorts',
+  'breeze ultra light solid boxer shorts':'Breeze Ultra-Light Solid Boxer Shorts',
+  'breeze ultra light boxer shorts core solid':'Breeze Ultra-Light Solid Boxer Shorts',
+  'breeeze ultra light inner boxers core stripes':'Breeze Ultra-Light Solid Inner Boxer',
+  'renewed sweatshirt':'Next Classic Sweatshirt',
+  'renewed hoodies':'Next Closed Hoodie',
+  'renewdtrackpant':'Prima Jersey Trackpants',
+  'prima jersey trackpants':'Prima Jersey Trackpants',
+  'elemental knit track pant solid':'CutnSew Prima Jersey Trackpants',
+  'the stretch pyjama pants core solid':'The Stretch Pyjama Pants Core Solid',
+  'jean pyjama':'Denim Printed Pyjama',
+  'lounge pyjama':'Relaxed Fit Solid Pyjama',
+  'solid knit pyjama':'Relaxed Fit Solid Pyjama',
+  'lounge shorts':'Lounge Shorts',
+  'constant chino shorts':'Freedom 4-Way Stretch Basic Chino Shorts',
+  'constant casual shorts':'Freedom 4-Way Stretch Basic Chino Shorts',
+  'basic elemental solid knit shorts':'Basic Elemental Solid Knit Shorts',
+  'fluid tshirt':'Flatknit T-Shirts',
+  'polo tshirt':'Textured 2 Button Polo',
+  'pique solid fs shirt':'Pique Solid FS Shirt',
+  'pique solid tshirt':'Pique Solid Tshirt',
+  'popcorn fs henley tshirt':'Popcorn JQ Neck HS Tshirt',
+  'popcorn jq neck hs tshirt':'Popcorn JQ Neck HS Tshirt',
+  'statement printed tshirt':'Statement Printed Tshirt',
+  'statement solid elemental tshirt':'Statement Solid Elemental Tshirt',
+  'better basics solid tshirt':'Solid Jersey FS Tshirt',
+  'basic cotton lycra fs tshirt':'Solid Jersey FS Tshirt',
+  'waffle t shirts':'Flatknit T-Shirts',
+  'waffle tanktop':'Structured Waffle Tanktop',
+  'vortex solid tank top':'Vortex Solid Tank Top',
+  'neo cool cotton tank tops core print placement':'Neo-Cool Solid Tank Top',
+  'towel':'Ripple - Soft Bath Towel',
+  'renewd ottoman bomber jacket':'Next Bomber Jacket',
+  'Renewd ottoman bomber jacket':'Next Bomber Jacket',
+  'gym supporter turbo black':'Gym Supporter',
+  'Gym Supporter Turbo Black':'Gym Supporter',
+  'araam joggers':'Ottoman Joggers',
+  'Araam Joggers':'Ottoman Joggers',
+  'araam cargo joggers':'Essential Cargo Joggers',
+  'Araam cargo joggers':'Essential Cargo Joggers',
+  'araam cargo shorts':'Core Poly Cargo Shorts',
+  'Araam cargo shorts':'Core Poly Cargo Shorts',
+  'dam logo solid elemental jogger':'Basic Lounge Joggers',
+  'premium printed trunk':'EPP Printed Brief',
+  'sweatshirt solid elemental1':'Elemental Mock Neck Sweatshirt',
+  'micro placement printed hs tshirt ofr':'Statement Printed Tshirt',
+  'deo soft pride brief':'Deo-Soft Solid Brief',
+};
+
+let CH={}, csData=null, salesData=null, G=null, activeMonth='all';
+
+function showTab(n,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+n).classList.add('active');
+  if(G) renderTab(n);
+}
+
+function applyFilter(){
+  activeMonth = document.getElementById('month-sel').value;
+  if(G){ G = buildReport(csData, salesData, activeMonth); renderAll(); }
+}
+
+// ─── NORMALIZE ───────────────────────────────────────────────────────────────
+function norm(s){ return String(s||'').toLowerCase().replace(/[\-_]/g,' ').replace(/\s+/g,' ').trim(); }
+
+function fuzzyMatch(csName, salesNames){
+  const n = norm(csName);
+  // Check baked-in map first
+  const mapped = PROD_MAP[csName] || PROD_MAP[n];
+  if(mapped) return {name:mapped, type:'mapped', score:1};
+  // Exact after normalize
+  for(const s of salesNames){ if(norm(s)===n) return {name:s,type:'exact',score:1}; }
+  // Word overlap fuzzy
+  const wa=n.split(' ').filter(w=>w.length>2);
+  let best=null,bestScore=0;
+  for(const s of salesNames){
+    const wb=norm(s).split(' ').filter(w=>w.length>2);
+    let matches=0;
+    wa.forEach(w=>{ if(wb.some(ww=>ww.includes(w)||w.includes(ww))) matches++; });
+    const score=matches/Math.max(wa.length,wb.length);
+    if(score>bestScore){bestScore=score;best=s;}
+  }
+  if(bestScore>=0.55) return {name:best,type:'fuzzy',score:bestScore};
+  return {name:null,type:'none',score:0};
+}
+
+function lookupL2(l2){
+  if(!l2) return null;
+  const k = String(l2).toLowerCase().trim();
+  return MASTER[k] || null;
+}
+
+// ─── PROCESS DATA ─────────────────────────────────────────────────────────────
+function readFile(file,cb){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true,raw:false});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      cb(null,XLSX.utils.sheet_to_json(ws,{defval:''}));
+    }catch(e){cb(e);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function buildReport(csRows, salesRows, monthFilter){
+  // Build sales map — clean category_l3 name
+  const salesMap={};
+  const monthsSet=new Set();
+  salesRows.forEach(r=>{
+    const raw = String(r['category_l3']||r['Category']||r['product']||'').trim();
+    if(!raw) return;
+    const items = parseFloat(r['Items']||r['Quantity']||0)||0;
+    const dateStr = String(r['date']||r['Date']||r['Month']||'');
+    let month=0;
+    if(dateStr.includes('-')){
+      try{ month=new Date(dateStr).getMonth()+1; }catch(e){}
+    } else { month=parseInt(dateStr)||0; }
+    if(month) monthsSet.add(month);
+    if(!salesMap[raw]) salesMap[raw]={total:0,months:{}};
+    if(monthFilter==='all'){ salesMap[raw].total+=items; salesMap[raw].months[month]=(salesMap[raw].months[month]||0)+items; }
+    else if(month===parseInt(monthFilter)){ salesMap[raw].total+=items; salesMap[raw].months[month]=(salesMap[raw].months[month]||0)+items; }
+  });
+  const salesNames=Object.keys(salesMap);
+  const totalSales=Object.values(salesMap).reduce((a,b)=>a+b.total,0);
+
+  // Populate month filter
+  const sel=document.getElementById('month-sel');
+  const existingMonths=Array.from(sel.options).map(o=>o.value).filter(v=>v!=='all');
+  if(existingMonths.length===0){
+    const MNAMES={1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'};
+    Array.from(monthsSet).sort().forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m; opt.textContent=MNAMES[m]||'Month '+m;
+      sel.appendChild(opt);
+    });
+  }
+
+  // Process CS
+  let totalCS=0, pqCount=0;
+  const prodMap={};
+  const catTotals={};
+  const monthTotals={};
+  ALL_CATS.forEach(c=>catTotals[c]=0);
+
+  csRows.forEach(r=>{
+    totalCS++;
+    const l2  = String(r['Disposition: L2 Disposition']||r['EB']||r['L2 Disposition']||r['Custom L2 disposition']||'').trim();
+    const prod = String(r['Subcategory']||r['DW']||r['Custom Sub Product Category']||r['Custom Sub Product Category 1']||'').trim();
+    const dateStr = String(r['Created At']||r['date']||r['Date']||r['Months']||'');
+    let month=0;
+    if(dateStr.includes('/')){
+      try{ const p=dateStr.split('/'); month=parseInt(p[1]); }catch(e){}
+    } else if(dateStr.includes('-')){
+      try{ month=new Date(dateStr).getMonth()+1; }catch(e){}
+    } else { month=parseInt(dateStr)||0; }
+
+    if(monthFilter!=='all' && month!==parseInt(monthFilter)) return;
+
+    const mapped=lookupL2(l2);
+    if(!mapped) return;
+    pqCount++;
+
+    const key=prod||'Unknown';
+    if(!prodMap[key]) prodMap[key]={total:0,pq:0,cats:{},fit:0,nonfit:0,months:{}};
+    prodMap[key].total++;
+    prodMap[key].pq++;
+    prodMap[key].months[month]=(prodMap[key].months[month]||0)+1;
+    if(!prodMap[key].cats[mapped.cat]) prodMap[key].cats[mapped.cat]=0;
+    prodMap[key].cats[mapped.cat]++;
+    catTotals[mapped.cat]=(catTotals[mapped.cat]||0)+1;
+    if(FIT_CATS.includes(mapped.cat)) prodMap[key].fit++;
+    else prodMap[key].nonfit++;
+    if(!monthTotals[month]) monthTotals[month]={total:0,fit:0,nonfit:0,cats:{}};
+    monthTotals[month].total++;
+    if(FIT_CATS.includes(mapped.cat)){monthTotals[month].fit++;}
+    else{monthTotals[month].nonfit++;}
+    if(!monthTotals[month].cats[mapped.cat]) monthTotals[month].cats[mapped.cat]=0;
+    monthTotals[month].cats[mapped.cat]++;
+  });
+
+  // Also count total CS tickets per product (not just PQ)
+  csRows.forEach(r=>{
+    if(monthFilter!=='all'){
+      const dateStr=String(r['Created At']||'');
+      let month=0;
+      if(dateStr.includes('/')){ try{const p=dateStr.split('/');month=parseInt(p[1]);}catch(e){} }
+      else if(dateStr.includes('-')){ try{month=new Date(dateStr).getMonth()+1;}catch(e){} }
+      if(month!==parseInt(monthFilter)) return;
+    }
+    const prod=String(r['Subcategory']||r['Custom Sub Product Category']||r['Custom Sub Product Category 1']||'').trim();
+    if(!prod) return;
+    if(!prodMap[prod]) prodMap[prod]={total:0,pq:0,cats:{},fit:0,nonfit:0,months:{}};
+    if(!prodMap[prod]._totalCS) prodMap[prod]._totalCS=0;
+    prodMap[prod]._totalCS++;
+  });
+
+  // Map products to sales and build product data array
+  const productData=[];
+  const mappingResults=[];
+  Object.entries(prodMap).sort((a,b)=>b[1].pq-a[1].pq).forEach(([prod,data])=>{
+    if(!prod||prod==='Unknown'||prod==='spam') return;
+    const match=fuzzyMatch(prod,salesNames);
+    const salesItems=match.name?salesMap[match.name].total:0;
+    mappingResults.push({cs:prod,sales:match.name||'-',type:match.type,score:match.score,tickets:data._totalCS||data.total,pq:data.pq,salesItems});
+    productData.push({
+      product:prod, tickets:data._totalCS||data.total, pq:data.pq,
+      salesItems, salesName:match.name||'-', matchType:match.type,
+      pqRate:salesItems>0?data.pq/salesItems:0,
+      ticketRate:salesItems>0?(data._totalCS||data.total)/salesItems:0,
+      cats:{...data.cats}, fit:data.fit, nonfit:data.nonfit, months:{...data.months}
+    });
+  });
+
+  productData.sort((a,b)=>b.pq-a.pq);
+  return{productData,catTotals,monthTotals,totalCS,pqCount,totalSales,mappingResults,salesMap};
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function destroyC(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+function fmtP(n,d=2){return isNaN(n)||n===0?'0%':(n*100).toFixed(d)+'%';}
+function pClass(n){return n===0?'pct-zero':n>=0.03?'pct-high':n>=0.01?'pct-mid':'pct-low';}
+
+function renderAll(){
+  renderTab('overview');
+  const activeTab=document.querySelector('.tab.active').textContent.toLowerCase().replace(/\s/g,'');
+  const m={overview:'overview',mainsheet:'mainsheet',finalsheet:'finalsheet','fitvsnon-fit':'fit',categories:'categories',productmapping:'mapping'};
+  renderTab(m[activeTab]||'overview');
+}
+
+function renderTab(n){
+  if(!G) return;
+  const{productData,catTotals,monthTotals,totalCS,pqCount,totalSales,mappingResults}=G;
+
+  if(n==='overview'){
+    const fitT=productData.reduce((a,b)=>a+b.fit,0);
+    const nfitT=productData.reduce((a,b)=>a+b.nonfit,0);
+    const pqRate=totalSales>0?pqCount/totalSales:0;
+    const tktRate=totalSales>0?totalCS/totalSales:0;
+    document.getElementById('kpi-ov').innerHTML=[
+      {l:'Total CS Tickets',v:totalCS.toLocaleString(),s:'all tickets',c:'blue'},
+      {l:'PQ Complaints',v:pqCount.toLocaleString(),s:'product quality related',c:'red'},
+      {l:'PQ Rate',v:fmtP(pqRate),s:'complaints / sales',c:pqRate>0.03?'red':pqRate>0.015?'amber':'green'},
+      {l:'Total Items Sold',v:Math.round(totalSales).toLocaleString(),s:'from sales file',c:'teal'},
+      {l:'FIT Complaints',v:fitT.toLocaleString(),s:pqCount?(fitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'rose'},
+      {l:'Non-FIT Complaints',v:nfitT.toLocaleString(),s:pqCount?(nfitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'purple'},
+      {l:'Ticket Rate',v:fmtP(tktRate),s:'all tickets / sales',c:'amber'},
+      {l:'Products',v:productData.length,s:'with PQ complaints',c:''},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s}</div></div>`).join('');
+
+    const fitT2=productData.reduce((a,b)=>a+b.fit,0);
+    const nfitT2=productData.reduce((a,b)=>a+b.nonfit,0);
+    destroyC('c-fit-pie');
+    CH['c-fit-pie']=new Chart(document.getElementById('c-fit-pie'),{type:'doughnut',data:{labels:['FIT Related','Non-FIT Related'],datasets:[{data:[fitT2,nfitT2],backgroundColor:['#ef4444','#8b5cf6'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}}}});
+
+    const catArr=Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    destroyC('c-cat-bar');
+    CH['c-cat-bar']=new Chart(document.getElementById('c-cat-bar'),{type:'bar',data:{labels:catArr.map(([k])=>k.length>18?k.substring(0,16)+'..':k),datasets:[{data:catArr.map(([,v])=>v),backgroundColor:catArr.map(([k])=>CAT_COLORS[k]||'#94a3b8'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+
+    const months=Object.keys(monthTotals).sort().map(Number);
+    const MNAMES={1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
+    destroyC('c-monthly');
+    CH['c-monthly']=new Chart(document.getElementById('c-monthly'),{type:'line',data:{labels:months.map(m=>MNAMES[m]||'M'+m),datasets:[{label:'PQ Total',data:months.map(m=>monthTotals[m]?.total||0),borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',fill:true,tension:.3,pointRadius:4},{label:'FIT',data:months.map(m=>monthTotals[m]?.fit||0),borderColor:'#f97316',backgroundColor:'transparent',tension:.3,pointRadius:3},{label:'Non-FIT',data:months.map(m=>monthTotals[m]?.nonfit||0),borderColor:'#8b5cf6',backgroundColor:'transparent',tension:.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,padding:6}}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
+
+    const byRate=[...productData].filter(p=>p.salesItems>30).sort((a,b)=>b.pqRate-a.pqRate).slice(0,10);
+    document.getElementById('top-rate').innerHTML=byRate.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:11px;color:#94a3b8;min-width:16px">${i+1}</span><span style="flex:1;font-size:12px;font-weight:500">${p.product}</span><span class="badge br">${fmtP(p.pqRate)}</span></div>`).join('');
+    const byVol=[...productData].sort((a,b)=>b.pq-a.pq).slice(0,10);
+    document.getElementById('top-vol').innerHTML=byVol.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:11px;color:#94a3b8;min-width:16px">${i+1}</span><span style="flex:1;font-size:12px;font-weight:500">${p.product}</span><span class="badge br">${p.pq}</span><span style="font-size:11px;color:#94a3b8">${p.salesItems>0?fmtP(p.pqRate):'-'}</span></div>`).join('');
+  }
+
+  if(n==='mainsheet'){
+    const fitT=productData.reduce((a,b)=>a+b.fit,0),nfitT=productData.reduce((a,b)=>a+b.nonfit,0);
+    const pqRate=totalSales>0?pqCount/totalSales:0,tktRate=totalSales>0?totalCS/totalSales:0;
+    document.getElementById('kpi-main').innerHTML=[
+      {l:'Total Tickets vs Sales',v:fmtP(tktRate),s:totalCS+' / '+Math.round(totalSales).toLocaleString(),c:'blue'},
+      {l:'Product Complaints vs Sales',v:fmtP(pqRate),s:pqCount+' PQ complaints',c:'red'},
+      {l:'FIT Related',v:fitT,s:pqCount?(fitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'rose'},
+      {l:'Non-FIT Related',v:nfitT,s:pqCount?(nfitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'purple'},
+      {l:'Total Sales',v:Math.round(totalSales).toLocaleString(),c:'teal'},
+      {l:'Products',v:productData.length,c:''},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
+    window._mainData=productData;
+    document.getElementById('main-cnt').textContent=productData.length;
+    renderMainTbl(productData);
+  }
+
+  if(n==='finalsheet'){
+    const activeCats=ALL_CATS.filter(c=>catTotals[c]>0);
+    window._finalData=productData; window._finalCats=activeCats;
+    document.getElementById('fin-head').innerHTML=`<tr><th>Product</th><th>PQ</th><th>Sales</th>${activeCats.map(c=>`<th style="font-size:10px;max-width:65px;word-break:break-word">${c}</th>`).join('')}<th>Grand Total %</th></tr>`;
+    renderFinalTbl(productData,activeCats);
+  }
+
+  if(n==='fit'){
+    const fitT=productData.reduce((a,b)=>a+b.fit,0),nfitT=productData.reduce((a,b)=>a+b.nonfit,0);
+    document.getElementById('kpi-fit').innerHTML=[
+      {l:'Total PQ',v:pqCount,c:'red'},
+      {l:'FIT Complaints',v:fitT,s:pqCount?(fitT/pqCount*100).toFixed(1)+'%':'',c:'rose'},
+      {l:'Non-FIT Complaints',v:nfitT,s:pqCount?(nfitT/pqCount*100).toFixed(1)+'%':'',c:'purple'},
+      {l:'Most FIT Issue',v:(()=>{const top=FIT_CATS.map(c=>({c,v:catTotals[c]||0})).sort((a,b)=>b.v-a.v)[0];return top?top.c:'-';})(),s:'highest volume',c:'amber'},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
+    const top20=[...productData].filter(p=>p.pq>0).sort((a,b)=>b.pq-a.pq).slice(0,20);
+    destroyC('c-fit-stack');
+    CH['c-fit-stack']=new Chart(document.getElementById('c-fit-stack'),{type:'bar',data:{labels:top20.map(p=>p.product.length>22?p.product.substring(0,20)+'..':p.product),datasets:[{label:'FIT',data:top20.map(p=>p.fit),backgroundColor:'#ef4444',borderRadius:2,stack:'s'},{label:'Non-FIT',data:top20.map(p=>p.nonfit),backgroundColor:'#8b5cf6',borderRadius:2,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:10}},stacked:true},y:{ticks:{font:{size:9}},stacked:true}}}});
+    document.getElementById('fit-tbody').innerHTML=top20.map(p=>`<tr><td><strong>${p.product}</strong></td><td>${p.pq}</td><td style="color:#ef4444;font-weight:700">${p.fit}</td><td><span class="badge ${p.pq&&p.fit/p.pq>0.6?'br':'ba'}">${p.pq?(p.fit/p.pq*100).toFixed(0):0}%</span></td><td style="color:#8b5cf6;font-weight:700">${p.nonfit}</td><td><span class="badge bp">${p.pq?(p.nonfit/p.pq*100).toFixed(0):0}%</span></td></tr>`).join('');
+    const top15f=[...productData].filter(p=>FIT_CATS.some(c=>p.cats[c]>0)).sort((a,b)=>b.fit-a.fit).slice(0,15);
+    destroyC('c-fit-sub');
+    CH['c-fit-sub']=new Chart(document.getElementById('c-fit-sub'),{type:'bar',data:{labels:top15f.map(p=>p.product.length>18?p.product.substring(0,16)+'..':p.product),datasets:FIT_CATS.map(c=>({label:c,data:top15f.map(p=>p.cats[c]||0),backgroundColor:CAT_COLORS[c],borderRadius:2,stack:'s'}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:10}},stacked:true},y:{ticks:{font:{size:11}},beginAtZero:true,stacked:true}}}});
+  }
+
+  if(n==='categories'){
+    const activeCatArr=ALL_CATS.map(c=>({c,v:catTotals[c]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+    document.getElementById('kpi-cats').innerHTML=activeCatArr.slice(0,7).map(({c,v})=>`<div class="kpi"><div class="lbl" style="font-size:10px">${c}</div><div class="val" style="font-size:18px;color:${CAT_COLORS[c]}">${v}</div><div class="sub">${pqCount?(v/pqCount*100).toFixed(1)+'% of PQ':''}</div></div>`).join('');
+    destroyC('c-cats');
+    CH['c-cats']=new Chart(document.getElementById('c-cats'),{type:'bar',data:{labels:activeCatArr.map(x=>x.c.length>20?x.c.substring(0,18)+'..':x.c),datasets:[{data:activeCatArr.map(x=>x.v),backgroundColor:activeCatArr.map(x=>CAT_COLORS[x.c]||'#94a3b8'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:10}}}}}});
+    const months=Object.keys(monthTotals).sort().map(Number);
+    const MNAMES={1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
+    destroyC('c-cat-trend');
+    CH['c-cat-trend']=new Chart(document.getElementById('c-cat-trend'),{type:'line',data:{labels:months.map(m=>MNAMES[m]||'M'+m),datasets:activeCatArr.slice(0,6).map(({c})=>({label:c,data:months.map(m=>monthTotals[m]?.cats[c]||0),borderColor:CAT_COLORS[c],backgroundColor:'transparent',tension:.3,pointRadius:3,borderWidth:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,padding:6}}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
+    const sel=document.getElementById('cat-sel');
+    if(sel.options.length<=1){ activeCatArr.forEach(({c,v})=>{ const o=document.createElement('option');o.value=c;o.textContent=`${c} (${v})`;sel.appendChild(o); }); }
+  }
+
+  if(n==='mapping'){
+    const exact=mappingResults.filter(m=>m.type==='exact'||m.type==='mapped').length;
+    const fuzzy=mappingResults.filter(m=>m.type==='fuzzy').length;
+    const none=mappingResults.filter(m=>m.type==='none').length;
+    document.getElementById('kpi-map').innerHTML=[
+      {l:'Total CS Products',v:mappingResults.length,c:''},
+      {l:'Matched',v:exact,s:(mappingResults.length?(exact/mappingResults.length*100).toFixed(0)+'%':''),c:'green'},
+      {l:'Fuzzy Matched',v:fuzzy,s:'auto-matched',c:'amber'},
+      {l:'No Match',v:none,s:'no sales data',c:'red'},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
+    document.getElementById('map-tbody').innerHTML=mappingResults.map(m=>`<tr>
+      <td><strong>${m.cs}</strong></td><td>${m.tickets}</td><td><span class="badge br">${m.pq}</span></td>
+      <td style="color:${m.type==='none'?'#dc2626':'#374151'}">${m.sales}</td>
+      <td>${m.salesItems>0?Math.round(m.salesItems).toLocaleString():'-'}</td>
+      <td><span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;background:${m.type==='exact'||m.type==='mapped'?'#dcfce7':m.type==='fuzzy'?'#fef3c7':'#fee2e2'};color:${m.type==='exact'||m.type==='mapped'?'#15803d':m.type==='fuzzy'?'#b45309':'#b91c1c'}">${m.type==='mapped'?'Pre-mapped':m.type==='exact'?'Exact':m.type==='fuzzy'?'Fuzzy ('+Math.round(m.score*100)+'%)':'No Match'}</span></td>
+    </tr>`).join('');
+  }
+}
+
+function renderMainTbl(data){
+  document.getElementById('main-tbody').innerHTML=data.map((p,i)=>`<tr>
+    <td style="color:#94a3b8;font-size:11px">${i+1}</td>
+    <td><strong>${p.product}</strong></td>
+    <td>${p.tickets}</td>
+    <td>${p.salesItems>0?Math.round(p.salesItems).toLocaleString():'-'}</td>
+    <td class="${pClass(p.ticketRate)}">${p.salesItems>0?fmtP(p.ticketRate):'-'}</td>
+    <td><strong>${p.pq}</strong></td>
+    <td class="${pClass(p.pqRate)}">${p.salesItems>0?fmtP(p.pqRate):'-'}</td>
+    <td style="color:#ef4444">${p.fit}</td>
+    <td style="color:#8b5cf6">${p.nonfit}</td>
+    <td><span class="badge ${p.pq&&p.fit/p.pq>0.5?'br':'bp'}">${p.pq?(p.fit/p.pq*100).toFixed(0):0}%</span></td>
+  </tr>`).join('');
+}
+
+function renderFinalTbl(data,cats){
+  document.getElementById('fin-tbody').innerHTML=data.map(p=>`<tr>
+    <td><strong>${p.product}</strong></td>
+    <td>${p.pq}</td>
+    <td>${p.salesItems>0?Math.round(p.salesItems).toLocaleString():'-'}</td>
+    ${cats.map(c=>{const cnt=p.cats[c]||0;const rate=p.salesItems>0?cnt/p.salesItems:0;return`<td class="${pClass(rate)}">${p.salesItems>0&&cnt>0?fmtP(rate,4):'0'}</td>`;}).join('')}
+    <td class="${pClass(p.pqRate)}"><strong>${p.salesItems>0?fmtP(p.pqRate,4):'0'}</strong></td>
+  </tr>`).join('');
+}
+
+function filterMain(){
+  const q=document.getElementById('srch-main').value.toLowerCase();
+  const d=window._mainData||[];
+  const f=q?d.filter(p=>p.product.toLowerCase().includes(q)):d;
+  document.getElementById('main-cnt').textContent=f.length;
+  renderMainTbl(f);
+}
+
+function filterFinal(){
+  const q=document.getElementById('srch-final').value.toLowerCase();
+  const hz=document.getElementById('hide-zero').checked;
+  let d=window._finalData||[];
+  if(q) d=d.filter(p=>p.product.toLowerCase().includes(q));
+  if(hz) d=d.filter(p=>p.pq>0);
+  renderFinalTbl(d,window._finalCats||ALL_CATS);
+}
+
+function renderCatProds(){
+  const cat=document.getElementById('cat-sel').value;
+  if(!cat||!G) return;
+  const d=[...G.productData].filter(p=>p.cats[cat]>0).sort((a,b)=>(b.cats[cat]||0)-(a.cats[cat]||0)).slice(0,15);
+  document.getElementById('cat-prod-tbody').innerHTML=d.map((p,i)=>`<tr>
+    <td style="color:#94a3b8">${i+1}</td>
+    <td><strong>${p.product}</strong></td>
+    <td><span class="badge br">${p.cats[cat]||0}</span></td>
+    <td>${p.salesItems>0?Math.round(p.salesItems).toLocaleString():'-'}</td>
+    <td class="${pClass(p.salesItems>0?(p.cats[cat]||0)/p.salesItems:0)}">${p.salesItems>0?fmtP((p.cats[cat]||0)/p.salesItems):'-'}</td>
+  </tr>`).join('');
+}
+
+// ─── FILE HANDLERS ────────────────────────────────────────────────────────────
+document.getElementById('f-cs').addEventListener('change',function(e){
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('cs-st').textContent='Loading...';
+  readFile(file,(err,rows)=>{
+    if(err){document.getElementById('cs-st').textContent='Error!';return;}
+    csData=rows;
+    document.getElementById('cs-st').textContent=rows.length+' rows loaded';
+    document.getElementById('lbl-cs').classList.add('loaded');
+    checkReady();
+  });
+});
+
+document.getElementById('f-sales').addEventListener('change',function(e){
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('sales-st').textContent='Loading...';
+  readFile(file,(err,rows)=>{
+    if(err){document.getElementById('sales-st').textContent='Error!';return;}
+    salesData=rows;
+    document.getElementById('sales-st').textContent=rows.length+' rows loaded';
+    document.getElementById('lbl-sales').classList.add('loaded');
+    checkReady();
+  });
+});
+
+function checkReady(){
+  const btn=document.getElementById('gen-btn');
+  if(csData&&salesData){btn.disabled=false;}
+}
+
+function generate(){
+  if(!csData||!salesData)return;
+  document.getElementById('gen-btn').textContent='Generating...';
+  setTimeout(()=>{
+    G=buildReport(csData,salesData,activeMonth);
+    document.getElementById('no-data').style.display='none';
+    document.getElementById('ov-data').style.display='block';
+    document.getElementById('rpt-sub').textContent=`${G.totalCS.toLocaleString()} tickets | ${G.pqCount.toLocaleString()} PQ complaints | ${Math.round(G.totalSales).toLocaleString()} items sold`;
+    document.getElementById('gen-btn').textContent='Generate Report';
+    renderAll();
+  },100);
+}
+</script>
+</body>
+</html>
