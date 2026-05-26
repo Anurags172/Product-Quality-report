@@ -3,2339 +3,709 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Daily Support Dashboard — DaMENSCH</title>
+<title>PQ Report Dashboard — DaMENSCH</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;color:#1a1a1a;font-size:14px}
-.topbar{background:#0f172a;color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100}
-.topbar h1{font-size:16px;font-weight:700}
-.topbar .sub{font-size:11px;opacity:.55;margin-top:2px}
-
-
-
-.upload-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.upload-box{background:#1e293b;border:1.5px dashed #475569;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:11px;color:#94a3b8;text-align:center;min-width:130px;transition:all .2s}
+.topbar{background:#0f172a;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:17px;font-weight:700}
+.topbar .sub{font-size:11px;opacity:.6;margin-top:2px}
+.upload-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.upload-box{background:#1e293b;border:1.5px dashed #475569;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:12px;color:#94a3b8;transition:all .2s;text-align:center;min-width:120px}
 .upload-box:hover{border-color:#3b82f6;color:#60a5fa}
 .upload-box.loaded{border-color:#22c55e;color:#22c55e;border-style:solid}
 .upload-box input{display:none}
-.tabs{background:#fff;border-bottom:2px solid #e5e7eb;padding:0 20px;display:flex;overflow-x:auto;position:sticky;top:53px;z-index:99}
-.tab{padding:12px 15px;cursor:pointer;font-size:12px;font-weight:500;color:#64748b;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.gen-btn{background:#ef4444;color:#fff;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;transition:all .2s}
+.gen-btn:disabled{opacity:.35;cursor:not-allowed}
+.gen-btn:not(:disabled):hover{background:#dc2626}
+.tabs{background:#fff;border-bottom:2px solid #e5e7eb;padding:0 20px;display:flex;overflow-x:auto;position:sticky;top:57px;z-index:99}
+.tab{padding:13px 16px;cursor:pointer;font-size:12.5px;font-weight:500;color:#64748b;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
 .tab:hover{color:#0f172a}
-.tab.active{color:#0f172a;border-bottom-color:#3b82f6;font-weight:700}
-.content{padding:18px 22px;max-width:1440px;margin:0 auto}
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
-.kpi{background:#fff;border-radius:10px;padding:14px 15px;border:1px solid #e5e7eb;position:relative;overflow:hidden}
+.tab.active{color:#0f172a;border-bottom-color:#ef4444;font-weight:700}
+.content{padding:20px 24px;max-width:1440px;margin:0 auto}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:#fff;border-radius:10px;padding:15px 16px;border:1px solid #e5e7eb;position:relative;overflow:hidden}
 .kpi::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--ac,#cbd5e1)}
-.kpi.green{--ac:#22c55e}.kpi.red{--ac:#ef4444}.kpi.amber{--ac:#f59e0b}.kpi.blue{--ac:#3b82f6}.kpi.purple{--ac:#8b5cf6}.kpi.teal{--ac:#14b8a6}.kpi.gold{--ac:#f59e0b}.kpi.rose{--ac:#f43f5e}
-.kpi .lbl{font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.kpi.red{--ac:#ef4444}.kpi.green{--ac:#22c55e}.kpi.blue{--ac:#3b82f6}.kpi.amber{--ac:#f59e0b}.kpi.purple{--ac:#8b5cf6}.kpi.teal{--ac:#14b8a6}.kpi.rose{--ac:#f43f5e}
+.kpi .lbl{font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
 .kpi .val{font-size:22px;font-weight:700;color:#0f172a;line-height:1}
-.kpi.green .val{color:#16a34a}.kpi.red .val{color:#dc2626}.kpi.amber .val{color:#d97706}.kpi.blue .val{color:#1d4ed8}.kpi.purple .val{color:#7c3aed}.kpi.teal .val{color:#0d9488}.kpi.gold .val{color:#b45309}.kpi.rose .val{color:#e11d48}
-.kpi .sub{font-size:10px;color:#94a3b8;margin-top:3px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
-.card{background:#fff;border-radius:10px;padding:16px 18px;border:1px solid #e5e7eb;margin-bottom:14px}
+.kpi.red .val{color:#dc2626}.kpi.green .val{color:#16a34a}.kpi.blue .val{color:#1d4ed8}.kpi.amber .val{color:#d97706}.kpi.purple .val{color:#7c3aed}.kpi.teal .val{color:#0d9488}.kpi.rose .val{color:#e11d48}
+.kpi .sub{font-size:11px;color:#94a3b8;margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e5e7eb;margin-bottom:16px}
 .card:last-child{margin-bottom:0}
-.card h3{font-size:11px;font-weight:700;color:#64748b;margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
-.ch180{position:relative;height:180px}.ch200{position:relative;height:200px}.ch240{position:relative;height:240px}.ch280{position:relative;height:280px}.ch320{position:relative;height:320px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-table th{text-align:left;padding:8px 10px;background:#f8fafc;font-weight:700;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+.card h3{font-size:11.5px;font-weight:700;color:#64748b;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em}
+.ch200{position:relative;height:200px}
+.ch260{position:relative;height:260px}
+.ch300{position:relative;height:300px}
+.ch360{position:relative;height:360px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+table th{text-align:left;padding:9px 10px;background:#f8fafc;font-weight:700;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #e5e7eb;white-space:nowrap}
 table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#374151}
 table tr:hover td{background:#fafafa}
 table tr:last-child td{border-bottom:none}
-.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
-.bg{background:#dcfce7;color:#15803d}.br{background:#fee2e2;color:#b91c1c}.ba{background:#fef3c7;color:#b45309}.bb{background:#dbeafe;color:#1e40af}.bp{background:#ede9fe;color:#6d28d9}.bgr{background:#f1f5f9;color:#475569}.bt{background:#ccfbf1;color:#0f766e}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.bg{background:#dcfce7;color:#15803d}.br{background:#fee2e2;color:#b91c1c}.ba{background:#fef3c7;color:#b45309}.bb{background:#dbeafe;color:#1e40af}.bp{background:#ede9fe;color:#6d28d9}.bgr{background:#f1f5f9;color:#475569}
 .panel{display:none}.panel.active{display:block}
-.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 13px;font-size:11px;color:#1e40af;margin-bottom:12px}
-.warn{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:9px 13px;font-size:11px;color:#854d0e;margin-bottom:12px}
-.upload-zone{background:#fff;border:2px dashed #cbd5e1;border-radius:12px;padding:48px 24px;text-align:center;color:#94a3b8;cursor:pointer;transition:all .2s}
+.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1e40af;margin-bottom:14px}
+.warn{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#854d0e;margin-bottom:14px}
+.upload-zone{background:#fff;border:2px dashed #cbd5e1;border-radius:12px;padding:52px 24px;text-align:center;color:#94a3b8;cursor:pointer;transition:all .2s}
 .upload-zone:hover{border-color:#3b82f6;color:#3b82f6;background:#f8faff}
-.upload-zone p{font-size:15px;font-weight:600;margin:10px 0 5px;color:#334155}
-/* AOD Card */
-.aod-card{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:14px;padding:22px 26px;color:#fff;margin-bottom:18px}
-.aod-trophy{font-size:40px;margin-bottom:6px}
-.aod-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;opacity:.55;margin-bottom:3px}
-.aod-name{font-size:26px;font-weight:800;margin-bottom:10px}
-.aod-score{font-size:44px;font-weight:900;color:#fbbf24;line-height:1}
-.aod-stats{display:flex;gap:14px;margin-top:14px;flex-wrap:wrap}
-.aod-stat{background:rgba(255,255,255,.08);border-radius:8px;padding:7px 12px;text-align:center}
-.aod-stat .sv{font-size:16px;font-weight:700}
-.aod-stat .sl{font-size:9px;opacity:.55;margin-top:2px}
-/* Toggle */
-.toggle-row{display:flex;gap:6px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
-.tog-btn{padding:5px 13px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:11px;font-weight:500;color:#64748b}
-.tog-btn.active{background:#0f172a;color:#fff;border-color:#0f172a}
-/* SLA */
-.sla-bar{height:12px;border-radius:6px;background:#e5e7eb;overflow:hidden;margin:6px 0}
-.sla-fill{height:100%;border-radius:6px;transition:width .4s}
-input[type=file]{display:none}
-input[type=text]{padding:5px 9px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;width:180px}
-select{padding:4px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;background:#fff;cursor:pointer}
+.pct-high{color:#dc2626;font-weight:700}.pct-mid{color:#d97706;font-weight:600}.pct-low{color:#16a34a}.pct-zero{color:#e2e8f0}
+input[type=text]{padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;width:200px}
+select{padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;cursor:pointer}
 @media(max-width:768px){.grid2,.grid3{grid-template-columns:1fr}}
-
-
-/* ─── PREMIUM TAB HOVER ───────────────────── */
-.tab{
-  transition:
-    transform .18s ease,
-    color .18s ease,
-    background .18s ease;
-  border-radius:8px 8px 0 0;
-}
-
-.tab:hover{
-  transform:translateY(-3px) scale(1.03);
-  background:rgba(59,130,246,.06);
-}
-
-/* ─── DRAMATIC AOD REVEAL ─────────────────── */
-@keyframes dramaticReveal{
-  0%{
-    opacity:0;
-    transform:translateY(24px) scale(.96);
-    filter:blur(10px);
-  }
-
-  45%{
-    opacity:.2;
-    filter:blur(6px);
-  }
-
-  70%{
-    opacity:.6;
-    filter:blur(2px);
-  }
-
-  100%{
-    opacity:1;
-    transform:translateY(0) scale(1);
-    filter:blur(0);
-  }
-}
-
-.aod-name{
-  opacity:0;
-  animation:dramaticReveal 5s ease forwards;
-  animation-delay:.2s;
-  letter-spacing:.02em;
-}
-
-.aod-score{
-  opacity:0;
-  animation:dramaticReveal 3.5s ease forwards;
-  animation-delay:1.1s;
-}
-
-.aod-stat{
-  opacity:0;
-  animation:fadeUp .7s ease forwards;
-}
-
-.aod-stat:nth-child(1){animation-delay:2s}
-.aod-stat:nth-child(2){animation-delay:2.3s}
-.aod-stat:nth-child(3){animation-delay:2.6s}
-.aod-stat:nth-child(4){animation-delay:2.9s}
-
-/* ─── ANIMATIONS ───────────────────────────── */
-@keyframes fadeUp{
-  from{
-    opacity:0;
-    transform:translateY(14px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}
-
-@keyframes glowPulse{
-  0%{box-shadow:0 0 0 rgba(59,130,246,0)}
-  50%{box-shadow:0 0 18px rgba(59,130,246,.18)}
-  100%{box-shadow:0 0 0 rgba(59,130,246,0)}
-}
-
-.card{
-  animation:fadeUp .45s ease both;
-}
-
-.kpi{
-  animation:fadeUp .45s ease both;
-  transition:transform .18s ease, box-shadow .18s ease;
-}
-
-.kpi:hover{
-  transform:translateY(-3px);
-  box-shadow:0 8px 24px rgba(15,23,42,.08);
-}
-
-table tbody tr{
-  animation:fadeUp .4s ease both;
-}
-
-.tab{
-  transition:all .2s ease;
-}
-
-.tab:hover{
-  transform:translateY(-1px);
-}
-
-.aod-card{
-  animation:fadeUp .7s ease both, glowPulse 3s infinite;
-}
-
-#eff-tbody tr{
-  opacity:0;
-  animation:fadeUp .5s ease forwards;
-}
-
-#eff-tbody tr:nth-child(1){animation-delay:.05s}
-#eff-tbody tr:nth-child(2){animation-delay:.10s}
-#eff-tbody tr:nth-child(3){animation-delay:.15s}
-#eff-tbody tr:nth-child(4){animation-delay:.20s}
-#eff-tbody tr:nth-child(5){animation-delay:.25s}
-#eff-tbody tr:nth-child(6){animation-delay:.30s}
-#eff-tbody tr:nth-child(7){animation-delay:.35s}
-#eff-tbody tr:nth-child(8){animation-delay:.40s}
-#eff-tbody tr:nth-child(9){animation-delay:.45s}
-#eff-tbody tr:nth-child(10){animation-delay:.50s}
-
-canvas{
-  animation:fadeUp .6s ease both;
-}
-
-
-
-/* ─── PREMIUM ICON GLOW SYSTEM ───────────────── */
-.card h3{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  transition:all .25s ease;
-}
-
-.card:hover h3{
-  transform:translateX(2px);
-}
-
-#panel-efficiency .card h3:hover{
-  text-shadow:0 0 10px rgba(245,158,11,.35);
-}
-
-#panel-aibot .card h3:hover{
-  text-shadow:0 0 10px rgba(139,92,246,.35);
-}
-
-#panel-hourly .card h3:hover{
-  text-shadow:0 0 10px rgba(59,130,246,.35);
-}
-
-#panel-sla .card h3:hover{
-  text-shadow:0 0 10px rgba(34,197,94,.35);
-}
-
-#panel-repeat .card h3:hover{
-  text-shadow:0 0 10px rgba(239,68,68,.35);
-}
-
-
-
-/* ===== CELESTIAL PREMIUM EFFECTS ===== */
-
-.tab{
- transition:all .22s ease !important;
-}
-
-.tab:hover{
- transform:translateY(-4px) scale(1.04) !important;
- background:rgba(59,130,246,.08) !important;
- border-radius:10px 10px 0 0 !important;
- box-shadow:0 8px 18px rgba(59,130,246,.15) !important;
-}
-
-.card{
- transition:all .25s ease !important;
-}
-
-.card:hover{
- transform:translateY(-3px) !important;
- box-shadow:0 14px 30px rgba(15,23,42,.08) !important;
-}
-
-#panel-efficiency .card:hover{
- border-color:#f59e0b !important;
- box-shadow:0 0 18px rgba(245,158,11,.18) !important;
-}
-
-#panel-aibot .card:hover{
- border-color:#8b5cf6 !important;
- box-shadow:0 0 18px rgba(139,92,246,.18) !important;
-}
-
-#panel-hourly .card:hover{
- border-color:#3b82f6 !important;
- box-shadow:0 0 18px rgba(59,130,246,.18) !important;
-}
-
-#panel-sla .card:hover{
- border-color:#22c55e !important;
- box-shadow:0 0 18px rgba(34,197,94,.18) !important;
-}
-
-#panel-repeat .card:hover{
- border-color:#ef4444 !important;
- box-shadow:0 0 18px rgba(239,68,68,.18) !important;
-}
-
-.card h3{
- transition:all .25s ease !important;
-}
-
-.card:hover h3{
- transform:translateX(4px) !important;
- letter-spacing:.04em !important;
-}
-
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <h1>&#128202; Daily Support Dashboard — DaMENSCH</h1>
-    <div class="sub" id="rpt-date">Upload Agent Activity + Tickets All to begin</div>
+    <h1>&#128202; PQ Report Dashboard — DaMENSCH</h1>
+    <div class="sub" id="rpt-sub">Upload Flowcall CS file + Sales file to generate report</div>
   </div>
-
   <div class="upload-row">
-    <label class="upload-box" id="lbl-aa">
-      <div>&#128196; Agent Activity</div>
-      <div id="aa-st" style="font-size:10px;margin-top:2px">Not loaded</div>
-      <input type="file" id="f-aa" accept=".csv,.xlsx,.xls">
+    <label class="upload-box" id="lbl-cs">
+      <div>&#128196; Flowcall CS File</div>
+      <div id="cs-st" style="font-size:10px;margin-top:2px">Not loaded</div>
+      <input type="file" id="f-cs" accept=".csv,.xlsx,.xls">
     </label>
-    <label class="upload-box" id="lbl-tkt">
-      <div>&#128203; Tickets All</div>
-      <div id="tkt-st" style="font-size:10px;margin-top:2px">Not loaded</div>
-      <input type="file" id="f-tkt" accept=".csv,.xlsx,.xls">
+    <label class="upload-box" id="lbl-sales">
+      <div>&#128200; Sales File</div>
+      <div id="sales-st" style="font-size:10px;margin-top:2px">Not loaded</div>
+      <input type="file" id="f-sales" accept=".csv,.xlsx,.xls">
     </label>
+    <button class="gen-btn" id="gen-btn" onclick="generate()" disabled>Generate Report</button>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab('summary',this)">Summary</div>
-  <div class="tab" onclick="showTab('resolution',this)">Resolution</div>
-  <div class="tab" onclick="showTab('agents',this)">Agents</div>
-  <div class="tab" onclick="showTab('efficiency',this)">&#127942; Efficiency</div>
-  <div class="tab" onclick="showTab('sla',this)">SLA</div>
-  <div class="tab" onclick="showTab('hourly',this)">Hourly Load</div>
-  <div class="tab" onclick="showTab('fcr',this)">FCR</div>
-  <div class="tab" onclick="showTab('repeat',this)">Repeat %</div>
-  <div class="tab" onclick="showTab('aibot',this)">🤖 AI BOT</div>
-  <div class="tab" onclick="showTab('orders',this)">Orders</div>
-  <div class="tab" onclick="showTab('transfers',this)">Transfers</div>
-  <div class="tab" onclick="showTab('csat',this)">CSAT & DSAT</div>
-  <div class="tab" onclick="showTab('roster',this)">&#128197; Roster</div>
+  <div class="tab active" onclick="showTab('overview',this)">Overview</div>
+  <div class="tab" onclick="showTab('mainsheet',this)">Main Sheet</div>
+  <div class="tab" onclick="showTab('finalsheet',this)">Final Sheet</div>
+  <div class="tab" onclick="showTab('fit',this)">FIT vs Non-FIT</div>
+  <div class="tab" onclick="showTab('categories',this)">Categories</div>
+  <div class="tab" onclick="showTab('mapping',this)">Product Mapping</div>
 </div>
 
 <div class="content">
 
-<!-- SUMMARY -->
-<div id="panel-summary" class="panel active">
-  <div id="no-data" class="upload-zone" onclick="document.getElementById('f-aa').click()">
-    <div style="font-size:36px">&#128202;</div>
-    <p>Upload Agent Activity + Tickets All to begin</p>
-    <span style="font-size:12px">Agent Activity = performance | Tickets All = CSAT + disposition + wait time</span>
+<div id="panel-overview" class="panel active">
+  <div id="no-data" class="upload-zone" onclick="document.getElementById('f-cs').click()">
+    <div style="font-size:40px">&#128202;</div>
+    <p style="font-size:16px;font-weight:600;margin:12px 0 6px;color:#334155">Upload Flowcall CS + Sales to generate PQ Report</p>
+    <span style="font-size:12px">Master file baked in — no manual mapping needed</span>
   </div>
-  <div id="summary-data" style="display:none">
-    <div class="kpi-row" id="kpi-summary"></div>
-    <div class="grid2">
-      <div class="card"><h3>📊 Resolution time distribution</h3><div class="ch200"><canvas id="c-dist"></canvas></div></div>
-      <div class="card"><h3>📈 Chats by status</h3><div class="ch200"><canvas id="c-status"></canvas></div></div>
+  <div id="ov-data" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:12px;color:#64748b;font-weight:500">Filter by month:</span>
+      <select id="month-sel" onchange="applyFilter()">
+        <option value="all">All Months</option>
+      </select>
+      <span id="filter-info" style="font-size:11px;color:#94a3b8"></span>
+    </div>
+    <div class="kpi-row" id="kpi-ov"></div>
+    <div class="grid3">
+      <div class="card"><h3>FIT vs Non-FIT</h3><div class="ch200"><canvas id="c-fit-pie"></canvas></div></div>
+      <div class="card"><h3>Top complaint categories</h3><div class="ch200"><canvas id="c-cat-bar"></canvas></div></div>
+      <div class="card"><h3>Monthly PQ trend</h3><div class="ch200"><canvas id="c-monthly"></canvas></div></div>
     </div>
     <div class="grid2">
-      <div class="card"><h3>👥 Chats per agent</h3><div class="ch200"><canvas id="c-agent-vol"></canvas></div></div>
-      <div class="card"><h3>⚡ Hourly volume</h3><div class="ch200"><canvas id="c-hourly-mini"></canvas></div></div>
+      <div class="card"><h3>Top 10 products by PQ rate %</h3><div id="top-rate"></div></div>
+      <div class="card"><h3>Top 10 products by complaint volume</h3><div id="top-vol"></div></div>
     </div>
   </div>
-
-  
-
-
-
-
-<div class="card" id="weekly-ops-card" style="display:none">
-  <h3>📈 Weekly operations overview</h3>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Day</th>
-        <th>Incoming</th>
-        <th>Avg CSAT</th>
-        <th>Avg Wait</th>
-        <th>Top Disposition</th>
-      </tr>
-    </thead>
-
-    <tbody id="ops-weekly-body"></tbody>
-  </table>
 </div>
 
-<div class="card" id="weekly-disp-break-card" style="display:none">
-  <h3>📋 Weekly disposition breakdown</h3>
-
-  <div class="toggle-row" style="margin-top:-4px;margin-bottom:10px">
-    <button class="tog-btn active">Weekly</button>
-    <button class="tog-btn">Daily</button>
-    <span style="font-size:10px;color:#94a3b8">Top 20 dispositions only</span>
-  </div>
-
-  <div style="overflow-x:auto">
-    <table id="weekly-disp-matrix">
-      <thead id="weekly-disp-head"></thead>
-      <tbody id="weekly-disp-body"></tbody>
-    </table>
-  </div>
-</div>
-
-</div>
-
-<!-- RESOLUTION -->
-<div id="panel-resolution" class="panel">
-  <div class="grid2">
-    <div class="card"><h3>Team percentiles (min)</h3><div id="rt-stats"></div></div>
-    <div class="card"><h3>Bucket distribution</h3><div id="rt-buckets"></div></div>
-  </div>
-  <div class="card"><h3>Median resolution by agent</h3><div class="ch240"><canvas id="c-agent-rt"></canvas></div></div>
-</div>
-
-<!-- AGENTS -->
-<div id="panel-agents" class="panel">
+<div id="panel-mainsheet" class="panel">
+  <div class="kpi-row" id="kpi-main" style="grid-template-columns:repeat(6,1fr)"></div>
   <div class="card">
-    <h3>🏆 Agent performance</h3>
-    <table><thead><tr><th>Agent</th><th>Type</th><th>Chats</th><th>Completed</th><th>Avg Res</th><th>Median</th><th>75th</th><th>90th</th><th>1st Resp</th><th>Active</th></tr></thead>
-    <tbody id="agent-tbody"></tbody></table>
-  </div>
-  <div class="card" style="margin-top:14px">
-    <h3>📋 Disposition analysis</h3>
-    <div id="disp-note" class="warn">Disposition data comes from Tickets All file. Upload it to see this section.</div>
-    <div id="disp-content" style="display:none">
-      <div class="grid2" style="margin-top:0">
-        <div>
-          <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:8px">Top dispositions by volume</div>
-          <table><thead><tr><th>Disposition</th><th>Chats</th><th>Avg Res</th><th>Median</th><th>% Total</th></tr></thead><tbody id="disp-tbody"></tbody></table>
-        </div>
-        <div><div class="ch240"><canvas id="c-disp-rt"></canvas></div></div>
-      </div>
-      <div style="margin-top:14px">
-        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:8px">Top disposition per agent</div>
-        <table><thead><tr><th>Agent</th><th>Top Disposition</th><th>#</th><th>2nd Disposition</th><th>#</th><th>Avg Res</th></tr></thead><tbody id="agent-disp-tbody"></tbody></table>
-      </div>
+    <h3>Main Sheet — all products vs sales</h3>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <input type="text" id="srch-main" placeholder="Search product..." onkeyup="filterMain()">
+      <span style="font-size:11px;color:#94a3b8"><span id="main-cnt">0</span> products</span>
     </div>
+    <table><thead><tr><th>#</th><th>Product (CS Name)</th><th>Total CS Tickets</th><th>Total Sales</th><th>Ticket Rate %</th><th>PQ Complaints</th><th>PQ Rate %</th><th>FIT</th><th>Non-FIT</th><th>FIT %</th></tr></thead>
+    <tbody id="main-tbody"></tbody></table>
   </div>
 </div>
 
-<!-- EFFICIENCY -->
-<div id="panel-efficiency" class="panel">
-  <div id="aod-wrap"></div>
-  <div class="info">Score = CSAT 35% + Chats 25% + Resolution 20% + Completion 15% + First Response 10%. Auto-adjusts if no CSAT.</div>
-  <div class="kpi-row" id="kpi-efficiency"></div>
-  <div class="grid2">
-    <div class="card"><h3>🏆 Efficiency score by agent</h3><div class="ch240"><canvas id="c-efficiency"></canvas></div></div>
-    <div class="card"><h3>Active time vs resolution time</h3><div class="ch240"><canvas id="c-active-vs-res"></canvas></div></div>
-  </div>
-  <div class="card"><h3>Full efficiency breakdown</h3>
-    <table><thead><tr><th>Rank</th><th>Agent</th><th>Score</th><th>Chats</th><th>Median Res</th><th>1st Resp</th><th>Completion</th><th>CSAT</th><th>Rating</th></tr></thead>
-    <tbody id="eff-tbody"></tbody></table>
-  </div>
-</div>
-
-<!-- SLA -->
-<div id="panel-sla" class="panel">
-  <div class="info">SLA threshold: 12 minutes. Any chat resolved in more than 12 min = SLA breach.</div>
-  <div class="kpi-row" id="kpi-sla" style="grid-template-columns:repeat(5,1fr)"></div>
-  <div class="grid2">
-    <div class="card"><h3>⏱ SLA compliance by agent</h3>
-      <table><thead><tr><th>Agent</th><th>Chats</th><th>Within SLA</th><th>SLA %</th><th>Breached</th><th>Breach %</th><th>Status</th></tr></thead>
-      <tbody id="sla-tbody"></tbody></table>
-    </div>
-    <div class="card"><h3>SLA breach by hour</h3><div class="ch240"><canvas id="c-sla-hour"></canvas></div></div>
-  </div>
-  <div class="card"><h3>SLA breach distribution — how far over 12 min?</h3><div class="ch240"><canvas id="c-sla-dist"></canvas></div></div>
-</div>
-
-<!-- HOURLY LOAD -->
-<div id="panel-hourly" class="panel">
-  <div class="toggle-row">
-    <span style="font-size:11px;color:#64748b;font-weight:500">View:</span>
-    <button class="tog-btn active" onclick="setHourlyView('total',this)">Total Volume</button>
-    <button class="tog-btn" onclick="setHourlyView('avg',this)">Daily Average</button>
-    <span id="days-lbl" style="font-size:10px;color:#94a3b8"></span>
-  </div>
-  <div class="card"><h3>Hourly volume vs capacity</h3><div class="ch280"><canvas id="c-hourly-full"></canvas></div></div>
-  <div class="card"><h3>Hourly incoming vs wait time overlay</h3>
-    <div id="wt-overlay-note" class="warn" style="display:none">Add Wait Time column to Agent Activity to see wait time overlay.</div>
-    <div class="ch280"><canvas id="c-wt-overlay"></canvas></div>
-  </div>
-  <div class="card"><h3>Day-wise volume pattern</h3><div class="ch200"><canvas id="c-daily-pattern"></canvas></div></div>
+<div id="panel-finalsheet" class="panel">
+  <div class="info">Replicates your Final Sheet — each cell = complaint count / total sales for that product x category. Red = high rate, green = low.</div>
   <div class="card">
-    <h3>Hour-by-hour staffing</h3>
-    <div style="overflow-x:auto"><table><thead><tr id="hourly-thead"></tr></thead><tbody id="hourly-tbody"></tbody></table></div>
-  </div>
-  <!-- WAIT TIME DETAIL -->
-  <div class="card">
-    <h3>Wait time detail — add <strong>Wait Time</strong> column to Agent Activity (VLOOKUP from SLA sheet)</h3>
-    <div id="wt-note" class="warn">No Wait Time data found in Agent Activity. Add a Wait Time column and re-upload.</div>
-    <div id="wt-content" style="display:none">
-      <div class="kpi-row" id="kpi-wt" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px"></div>
-      <div class="grid2">
-        <div class="card" style="border:1px solid #e5e7eb">
-          <h3>Chats that had wait time &gt; 0</h3>
-          <div class="ch240"><canvas id="c-wt-dist"></canvas></div>
-        </div>
-        <div class="card" style="border:1px solid #e5e7eb">
-          <h3>Wait time by agent</h3>
-          <table><thead><tr><th>Agent</th><th>All Chats</th><th>Had Wait</th><th>Avg Wait (all)</th><th>Avg Wait (waiting only)</th><th>Max</th><th>Status</th></tr></thead>
-          <tbody id="wt-agent-tbody"></tbody></table>
-        </div>
-      </div>
+    <h3>Final Sheet — complaint rate by product x category</h3>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <input type="text" id="srch-final" placeholder="Search product..." onkeyup="filterFinal()">
+      <label style="font-size:12px;color:#64748b;display:flex;align-items:center;gap:4px">
+        <input type="checkbox" id="hide-zero" onchange="filterFinal()"> Hide zero rows
+      </label>
     </div>
+    <div style="overflow-x:auto"><table><thead id="fin-head"></thead><tbody id="fin-tbody"></tbody></table></div>
   </div>
 </div>
 
-<!-- FCR -->
-<div id="panel-fcr" class="panel">
-  <div class="info">First Contact Resolution = customer contacted once and did not contact again. Requires Customer Phone data. Disposition breakdown shows which issue types get resolved vs bounce back.</div>
-  <div class="kpi-row" id="kpi-fcr" style="grid-template-columns:repeat(4,1fr)"></div>
+<div id="panel-fit" class="panel">
+  <div class="kpi-row" id="kpi-fit" style="grid-template-columns:repeat(4,1fr)"></div>
   <div class="grid2">
-    <div class="card"><h3>FCR % by agent</h3>
-      <table><thead><tr><th>Agent</th><th>Unique Customers</th><th>Resolved (1 contact)</th><th>FCR %</th><th>Bounced Back</th><th>Flag</th></tr></thead>
-      <tbody id="fcr-agent-tbody"></tbody></table>
+    <div class="card"><h3>FIT vs Non-FIT by top 20 products</h3><div class="ch360"><canvas id="c-fit-stack"></canvas></div></div>
+    <div class="card"><h3>FIT breakdown table</h3>
+      <table><thead><tr><th>Product</th><th>Total PQ</th><th>FIT</th><th>FIT %</th><th>Non-FIT</th><th>Non-FIT %</th></tr></thead>
+      <tbody id="fit-tbody"></tbody></table>
     </div>
-    <div class="card"><h3>FCR rate by agent</h3><div class="ch240"><canvas id="c-fcr-agent"></canvas></div></div>
+  </div>
+  <div class="card"><h3>FIT subcategories — Fit Tight vs Fit Loose vs Fit/Size by product (top 15)</h3><div class="ch260"><canvas id="c-fit-sub"></canvas></div></div>
+</div>
+
+<div id="panel-categories" class="panel">
+  <div class="kpi-row" id="kpi-cats"></div>
+  <div class="grid2">
+    <div class="card"><h3>All categories breakdown</h3><div class="ch300"><canvas id="c-cats"></canvas></div></div>
+    <div class="card"><h3>Monthly category trend</h3><div class="ch300"><canvas id="c-cat-trend"></canvas></div></div>
   </div>
   <div class="card">
-    <h3>FCR by disposition — which issues get resolved first time vs come back?</h3>
-    <div id="fcr-disp-note" class="warn">Upload Tickets All file to see FCR by disposition.</div>
-    <div id="fcr-disp-content" style="display:none">
-      <table><thead><tr><th>Disposition</th><th>Total Contacts</th><th>FCR</th><th>FCR %</th><th>Bounced</th><th>Bounce %</th><th>Avg Res</th><th>Status</th></tr></thead>
-      <tbody id="fcr-disp-tbody"></tbody></table>
-    </div>
+    <h3>Top 15 products for selected category</h3>
+    <div style="margin-bottom:10px"><select id="cat-sel" onchange="renderCatProds()"><option value="">Select a category...</option></select></div>
+    <table><thead><tr><th>#</th><th>Product</th><th>Complaints</th><th>Sales</th><th>Rate %</th></tr></thead><tbody id="cat-prod-tbody"></tbody></table>
   </div>
 </div>
 
-<!-- REPEAT -->
-<div id="panel-repeat" class="panel">
-  <div class="kpi-row" id="kpi-repeat" style="grid-template-columns:repeat(4,1fr)"></div>
-
-  <div class="grid2">
-    <div class="card">
-      <h3>Daily incoming vs repeat</h3>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-        <span style="font-size:11px;color:#64748b;font-weight:500">Filter by disposition:</span>
-        <select id="repeat-disp-filter" onchange="filterRepeatChart()" style="font-size:11px;padding:4px 8px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;cursor:pointer;max-width:220px">
-          <option value="all">All Dispositions</option>
-        </select>
-      </div>
-      <div class="ch240"><canvas id="c-repeat-daily"></canvas></div>
-    </div>
-
-    <div class="card">
-      <h3>🔁 Repeat by disposition</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Disposition</th>
-            <th>Total</th>
-            <th>Repeat</th>
-            <th>Repeat %</th>
-          </tr>
-        </thead>
-        <tbody id="repeat-disp-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="grid2">
-    <div class="card"><h3>Repeat % by agent</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Agent</th>
-            <th>Incoming</th>
-            <th>Repeat</th>
-            <th>Repeat %</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="repeat-tbody"></tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h3>Day wise repeat breakdown</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Day</th>
-            <th>Incoming</th>
-            <th>Repeat</th>
-            <th>Repeat %</th>
-            <th>Top Disposition</th>
-          </tr>
-        </thead>
-        <tbody id="repeat-day-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-
-<!-- AI BOT -->
-
-<div id="panel-aibot" class="panel">
-
-  <div class="kpi-row" id="ai-kpis"></div>
-
-  <div class="grid2">
-    <div class="card">
-      <h3>📊 Ticket Status Breakup</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Tickets</th>
-            <th>%</th>
-          </tr>
-        </thead>
-        <tbody id="ai-status-body"></tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h3>😊 Survey Intelligence</h3>
-      <table>
-        <tbody id="ai-survey-body"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="grid2">
-    <div class="card">
-      <h3>🤖 Bot Efficiency — Daily</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Day</th>
-            <th>AI Customers</th>
-            <th>Contained</th>
-            <th>Efficiency %</th>
-          </tr>
-        </thead>
-        <tbody id="ai-efficiency-body"></tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h3>📦 Operational Relief — Daily</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Day</th>
-            <th>Total Demand</th>
-            <th>Contained</th>
-            <th>Relief %</th>
-          </tr>
-        </thead>
-        <tbody id="ai-relief-body"></tbody>
-      </table>
-    </div>
-  </div>
-
-
+<div id="panel-mapping" class="panel">
+  <div class="warn">Products where CS name and Sales name don't match exactly. Fuzzy matching applied automatically. Review "No Match" rows — these products have no sales data and their complaint rates can't be calculated.</div>
+  <div class="kpi-row" id="kpi-map" style="grid-template-columns:repeat(4,1fr)"></div>
   <div class="card">
-    <h3>📈 Top 10 Task Intelligence</h3>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Task</th>
-          <th>AI Touch</th>
-          <th>Escalated</th>
-          <th>Repeat</th>
-          <th>CSAT</th>
-          <th>DSAT</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-
-      <tbody id="ai-task-body"></tbody>
-
-    </table>
+    <h3>Product name mapping — Flowcall CS vs Sales</h3>
+    <table><thead><tr><th>CS Product Name (Flowcall DW)</th><th>CS Tickets</th><th>PQ Complaints</th><th>Matched Sales Name</th><th>Sales Items</th><th>Match Type</th></tr></thead>
+    <tbody id="map-tbody"></tbody></table>
   </div>
-
-</div>
-<!-- ORDERS -->
-
-<div id="panel-orders" class="panel">
-  <div class="kpi-row" id="kpi-orders" style="grid-template-columns:repeat(4,1fr)"></div>
-  <div class="grid2">
-    <div class="card"><h3>Top orders by contacts</h3>
-      <table><thead><tr><th>Order</th><th>Contacts</th><th>Agents</th><th>Avg Res</th><th>Status</th></tr></thead>
-      <tbody id="order-tbody"></tbody></table>
-    </div>
-    <div class="card"><h3>Orders with 4+ contacts</h3>
-      <table><thead><tr><th>Order</th><th>Contacts</th><th>Last Agent</th><th>Note</th></tr></thead>
-      <tbody id="order-hot-tbody"></tbody></table>
-    </div>
-  </div>
-</div>
-
-<!-- TRANSFERS -->
-<div id="panel-transfers" class="panel">
-  <div class="kpi-row" id="kpi-transfers" style="grid-template-columns:repeat(4,1fr)"></div>
-  <div class="grid2">
-    <div class="card"><h3>Transfer rate by agent</h3>
-      <table><thead><tr><th>Agent</th><th>Chats</th><th>Transferred</th><th>Rate %</th><th>Flag</th></tr></thead>
-      <tbody id="transfer-tbody"></tbody></table>
-    </div>
-    <div class="card"><h3>Transfer details</h3>
-      <table><thead><tr><th>Ticket</th><th>Agent</th><th>Reason</th></tr></thead>
-      <tbody id="transfer-detail-tbody"></tbody></table>
-    </div>
-  </div>
-</div>
-
-<!-- CSAT -->
-<div id="panel-csat" class="panel">
-  <div class="warn" id="csat-warn">CSAT data comes from Tickets All file. Upload it to see CSAT & DSAT analysis. Ratings 4-5 = CSAT, 1-3 = DSAT.</div>
-  <div class="kpi-row" id="kpi-csat" style="grid-template-columns:repeat(5,1fr)"></div>
-  <div class="grid2">
-    <div class="card"><h3>Rating distribution</h3><div class="ch240"><canvas id="c-ratings"></canvas></div></div>
-    <div class="card"><h3>CSAT vs DSAT by agent</h3><div class="ch240"><canvas id="c-csat-agent"></canvas></div></div>
-  </div>
-  <div class="card">
-    <h3>CSAT & DSAT by agent — detailed</h3>
-    <table><thead><tr><th>Agent</th><th>Rated</th><th>CSAT (4-5)</th><th>CSAT %</th><th>DSAT (1-3)</th><th>DSAT %</th><th>Avg Score</th><th>5 Star</th><th>Rating</th></tr></thead>
-    <tbody id="csat-agent-tbody"></tbody></table>
-  </div>
-  <div class="card">
-    <h3>7-day CSAT & DSAT trend</h3>
-    <div id="csat-7day-warn" class="warn" style="font-size:11px;margin-bottom:8px">Upload multiple days of data to see the 7-day trend.</div>
-    <div id="csat-7day-wrap" style="display:none">
-      <div style="position:relative;height:220px"><canvas id="c-csat-7day"></canvas></div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Daily CSAT by agent (multi-day view)</h3>
-    <div id="agent-7day-warn" class="warn" style="font-size:11px;margin-bottom:8px">Upload multiple days of data to see agent daily CSAT breakdown.</div>
-    <div id="agent-7day-wrap" style="display:none">
-      <div style="position:relative;height:260px"><canvas id="c-agent-7day"></canvas></div>
-    </div>
-  </div>
-  <div class="card" style="margin-top:0"><h3>DSAT follow-up list (ratings 1-3)</h3>
-    <table><thead><tr><th>Ticket</th><th>Agent</th><th>Customer</th><th>Rating</th><th>Comment</th><th>Disposition</th><th>Product</th></tr></thead>
-    <tbody id="dsat-tbody"></tbody></table>
-  </div>
-</div>
-
-<!-- ROSTER -->
-<div id="panel-roster" class="panel">
-  <div class="info">Upload a full week of Agent Activity for best roster recommendations based on your actual volume patterns.</div>
-  <div class="kpi-row" id="kpi-roster" style="grid-template-columns:repeat(4,1fr)"></div>
-  <div class="card"><h3>&#127774; Week off recommendations</h3><div id="weekoff-section"></div></div>
-  <div class="card"><h3>&#128197; Recommended weekly roster</h3><div style="overflow-x:auto" id="roster-grid-wrap"></div>
-    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;font-size:10px">
-      <span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:4px;font-weight:700">08:00</span> 08:00-17:00
-      <span style="background:#ede9fe;color:#6d28d9;padding:2px 7px;border-radius:4px;font-weight:700">10:00</span> 10:00-19:00
-      <span style="background:#fef3c7;color:#b45309;padding:2px 7px;border-radius:4px;font-weight:700">12:00</span> 12:00-21:00
-      <span style="background:#dcfce7;color:#15803d;padding:2px 7px;border-radius:4px;font-weight:700">15:00</span> 15:00-00:00
-      <span style="background:#f1f5f9;color:#94a3b8;padding:2px 7px;border-radius:4px;font-weight:700">OFF</span> Week off
-    </div>
-  </div>
-  <div class="grid2">
-    <div class="card"><h3>Daily coverage</h3><table><thead><tr id="cov-thead"></tr></thead><tbody id="cov-tbody"></tbody></table></div>
-    <div class="card"><h3>Peak hour staffing check</h3><div id="peak-check"></div></div>
-  </div>
-  <div class="card"><h3>Agent coverage heatmap</h3><div class="ch320"><canvas id="c-heatmap"></canvas></div></div>
 </div>
 
 </div>
 
 <script>
-// ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const PALETTE=['#1d4ed8','#7c3aed','#dc2626','#16a34a','#b45309','#0891b2','#be185d','#65a30d','#9333ea','#ea580c','#0369a1','#4f46e5'];
-const ROSTER_CAP={8:40,9:40,10:40,11:40,12:40,13:80,14:80,15:80,16:80,17:40,18:40,19:40,20:40,21:40,22:30,23:30};
-const SLA_THRESHOLD=12;
-const NEW_KEYWORDS=['vamshi','sangna','chandan kumar','chandan b'];
-const SHIFT_TIMES=[{label:'08:00',start:8,end:17,cls:'background:#dbeafe;color:#1e40af'},{label:'10:00',start:10,end:19,cls:'background:#ede9fe;color:#6d28d9'},{label:'12:00',start:12,end:21,cls:'background:#fef3c7;color:#b45309'},{label:'15:00',start:15,end:24,cls:'background:#dcfce7;color:#15803d'}];
+// ─── MASTER MAPPINGS — BAKED IN ──────────────────────────────────────────────
+// Flowcall L2 values → PQ category
+const MASTER = {
+  // FIT Related
+  'fit too tight':                         {cat:'Fit Tight',     cat2:'FIT Related Complaints'},
+  'fit too loose':                         {cat:'Fit Loose',     cat2:'FIT Related Complaints'},
+  'fit too tight exchanges':               {cat:'Fit Tight',     cat2:'FIT Related Complaints'},
+  'fit too loose exchanges':               {cat:'Fit Loose',     cat2:'FIT Related Complaints'},
+  'not satisfied with fit and design':     {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'size guidance':                         {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'want to change size':                   {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'size exchanges':                        {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'size not available exchanges':          {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  'bubbles after wash exchanges':          {cat:'Fit/Size',      cat2:'FIT Related Complaints'},
+  // Fabric Quality
+  'not satisfied with fabric':             {cat:'Fabric Quality',cat2:'Non-FIT Related Complaints'},
+  'not satisfied with fabric exchanges':   {cat:'Fabric Quality',cat2:'Non-FIT Related Complaints'},
+  'fabric inquiry':                        {cat:'Fabric Quality',cat2:'Non-FIT Related Complaints'},
+  // Colour
+  'not satisfied with color':              {cat:'Appearance (Colour/design)', cat2:'Non-FIT Related Complaints'},
+  'not satisfied with color exchanges':    {cat:'Appearance (Colour/design)', cat2:'Non-FIT Related Complaints'},
+  'color fading on wash':                  {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'want to change color':                  {cat:'Appearance (Colour/design)', cat2:'Non-FIT Related Complaints'},
+  // Defects
+  'defect in product faded':               {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'defect in product faded 500d':          {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'defect in product faded exchanges':     {cat:'Colour Fade',   cat2:'Non-FIT Related Complaints'},
+  'defect in product hole in product':     {cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'defect in product hole in product exchanges':{cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'defect in product stain or used':       {cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'defect in product stitching':           {cat:'Stitching Issue',cat2:'Non-FIT Related Complaints'},
+  'defect in product stitching exchanges': {cat:'Stitching Issue',cat2:'Non-FIT Related Complaints'},
+  'damage product packaged received':      {cat:'Packaging',     cat2:'Non-FIT Related Complaints'},
+  'damage product package received exchanges':{cat:'Packaging',  cat2:'Non-FIT Related Complaints'},
+  // Incorrect item
+  'incorrect item product received exchanges':{cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  'difference between products':           {cat:'Product defect (Hole/Stain/used)', cat2:'Non-FIT Related Complaints'},
+  // Others (PQ-related)
+  'order return exchange':                 {cat:'Others',        cat2:'Non-FIT Related Complaints'},
+};
 
-let CH={}, G=null, hourlyView='total';
-let aaRows=null, tktRows=null;
-const agCC={};
-function agC(n){if(!agCC[n]){const i=Object.keys(agCC).length%PALETTE.length;agCC[n]=PALETTE[i];}return agCC[n];}
-function isNew(n){const k=n.toLowerCase();return NEW_KEYWORDS.some(x=>k.includes(x));}
+const ALL_CATS = ['Fit Tight','Fit Loose','Fit/Size','Fabric Quality','Colour Fade','Appearance (Colour/design)','Stitching Issue','Product defect (Hole/Stain/used)','Packaging','Shrinkage','Stretching','Waistband/ELASTIC','Pilling/Hairyness','Others'];
+const FIT_CATS = ['Fit Tight','Fit Loose','Fit/Size'];
+const CAT_COLORS = {'Fit Tight':'#ef4444','Fit Loose':'#f97316','Fit/Size':'#f59e0b','Fabric Quality':'#8b5cf6','Colour Fade':'#06b6d4','Appearance (Colour/design)':'#ec4899','Stitching Issue':'#14b8a6','Shrinkage':'#6366f1','Stretching':'#84cc16','Product defect (Hole/Stain/used)':'#dc2626','Pilling/Hairyness':'#0ea5e9','Packaging':'#f43f5e','Waistband/ELASTIC':'#a78bfa','Others':'#94a3b8'};
 
-// ─── TAB / SOURCE / TOGGLE ────────────────────────────────────────────────────
+// PRODUCT NAME MAPPING — CS Flowcall → Sales category_l3
+const PROD_MAP = {
+  'deo soft solid trunk':'Deo-Soft Solid Trunk',
+  'deo soft solid brief':'Deo-Soft Solid Brief',
+  'deo soft solid boxer brief':'Deo-Soft Solid Boxer Brief',
+  'deo soft melange trunk':'Deo-Soft Supima Printed Trunk',
+  'deo soft melange boxer brief':'Deo-Soft Supima Printed Boxer Brief',
+  'deo soft printed brief':'Deo-Soft Supima Printed Brief',
+  'deo soft printed boxer brief':'Deo-Soft Supima Printed Boxer Brief',
+  'deo soft supima solid trunk':'Deo-Soft Supima Solid Trunk',
+  'deo soft supima briefs core pop bold':'Deo-Soft Supima Pop Bold Brief',
+  'deo soft supima trunk core solid urbane':'Deo-Soft Supima Solid Trunk',
+  'deo soft trunks core print abstract':'Deo Soft Printed Trunk',
+  'deo soft trunks core solid ascent':'Deo-Soft Solid Trunk',
+  'deo cotton basic solid trunk':'Deo-Cotton Basic Solid Trunk',
+  'deo cotton basic solid brief':'Deo-Cotton Basic Solid Brief',
+  'deo cotton tonal solid trunk':'Deo-Cotton Tonal Solid Trunk',
+  'deo cotton briefs basic print basic':'Deo-Cotton Basic Printed Brief',
+  'unreal trunk':'Premium Solid Trunk',
+  'unreal brief':'Premium Solid Brief',
+  'cosmos trunk':'EPP Solid Trunk',
+  'cosmos brief':'EPP Solid Brief',
+  'feel mint solid trunk':'Feel Mint Solid Brief',
+  'feel mint round vest':'Neo-Cotton Round Vest',
+  'neo skin bamboo round vest':'Bamboo Round Vest',
+  'neo skin bamboo square vest':'Bamboo Square Vest Color',
+  'neo cotton round vest':'Neo-Cotton Round Vest',
+  'bamboo round vest color':'Bamboo Round Vest Color',
+  'bamboo round vest white':'Bamboo Round Vest White',
+  'bamboo square vest color':'Bamboo Square Vest Color',
+  'bamboo square vest white':'Bamboo Square Vest White',
+  'shapewear':'Sleeveless Shapewear Vest',
+  'shapewear trunk':'Bonded Solid Trunks',
+  'neo-cottonpinstripe vest':'Pinstripe Neo-Cotton Vest',
+  'breeze ultra light solid inner boxer':'Breeze Ultra-Light Solid Inner Boxer',
+  'breeze ultra light printed boxer shorts':'Breeze Ultra-Light Printed Boxer Shorts',
+  'breeze ultra light solid boxer shorts':'Breeze Ultra-Light Solid Boxer Shorts',
+  'breeze ultra light boxer shorts core solid':'Breeze Ultra-Light Solid Boxer Shorts',
+  'breeeze ultra light inner boxers core stripes':'Breeze Ultra-Light Solid Inner Boxer',
+  'renewed sweatshirt':'Next Classic Sweatshirt',
+  'renewed hoodies':'Next Closed Hoodie',
+  'renewdtrackpant':'Prima Jersey Trackpants',
+  'prima jersey trackpants':'Prima Jersey Trackpants',
+  'elemental knit track pant solid':'CutnSew Prima Jersey Trackpants',
+  'the stretch pyjama pants core solid':'The Stretch Pyjama Pants Core Solid',
+  'jean pyjama':'Denim Printed Pyjama',
+  'lounge pyjama':'Relaxed Fit Solid Pyjama',
+  'solid knit pyjama':'Relaxed Fit Solid Pyjama',
+  'lounge shorts':'Lounge Shorts',
+  'constant chino shorts':'Freedom 4-Way Stretch Basic Chino Shorts',
+  'constant casual shorts':'Freedom 4-Way Stretch Basic Chino Shorts',
+  'basic elemental solid knit shorts':'Basic Elemental Solid Knit Shorts',
+  'fluid tshirt':'Flatknit T-Shirts',
+  'polo tshirt':'Textured 2 Button Polo',
+  'pique solid fs shirt':'Pique Solid FS Shirt',
+  'pique solid tshirt':'Pique Solid Tshirt',
+  'popcorn fs henley tshirt':'Popcorn JQ Neck HS Tshirt',
+  'popcorn jq neck hs tshirt':'Popcorn JQ Neck HS Tshirt',
+  'statement printed tshirt':'Statement Printed Tshirt',
+  'statement solid elemental tshirt':'Statement Solid Elemental Tshirt',
+  'better basics solid tshirt':'Solid Jersey FS Tshirt',
+  'basic cotton lycra fs tshirt':'Solid Jersey FS Tshirt',
+  'waffle t shirts':'Flatknit T-Shirts',
+  'waffle tanktop':'Structured Waffle Tanktop',
+  'vortex solid tank top':'Vortex Solid Tank Top',
+  'neo cool cotton tank tops core print placement':'Neo-Cool Solid Tank Top',
+  'towel':'Ripple - Soft Bath Towel',
+  'renewd ottoman bomber jacket':'Next Bomber Jacket',
+  'Renewd ottoman bomber jacket':'Next Bomber Jacket',
+  'gym supporter turbo black':'Gym Supporter',
+  'Gym Supporter Turbo Black':'Gym Supporter',
+  'araam joggers':'Ottoman Joggers',
+  'Araam Joggers':'Ottoman Joggers',
+  'araam cargo joggers':'Essential Cargo Joggers',
+  'Araam cargo joggers':'Essential Cargo Joggers',
+  'araam cargo shorts':'Core Poly Cargo Shorts',
+  'Araam cargo shorts':'Core Poly Cargo Shorts',
+  'dam logo solid elemental jogger':'Basic Lounge Joggers',
+  'premium printed trunk':'EPP Printed Brief',
+  'sweatshirt solid elemental1':'Elemental Mock Neck Sweatshirt',
+  'micro placement printed hs tshirt ofr':'Statement Printed Tshirt',
+  'deo soft pride brief':'Deo-Soft Solid Brief',
+};
+
+let CH={}, csData=null, salesData=null, G=null, activeMonth='all';
+
 function showTab(n,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-
   el.classList.add('active');
-
-  const panel = document.getElementById('panel-'+n);
-  panel.classList.add('active');
-
-  panel.style.animation='none';
-  panel.offsetHeight;
-  panel.style.animation='fadeUp .35s ease';
-
-  if(G)renderTab(n);
+  document.getElementById('panel-'+n).classList.add('active');
+  if(G) renderTab(n);
 }
 
-function setHourlyView(v,el){
-  hourlyView=v;
-  document.querySelectorAll('.tog-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  if(G)renderTab('hourly');
+function applyFilter(){
+  activeMonth = document.getElementById('month-sel').value;
+  if(G){ G = buildReport(csData, salesData, activeMonth); renderAll(); }
 }
 
-// ─── PARSERS ─────────────────────────────────────────────────────────────────
-function parseDT(s){
-  if(!s||s==='-')return null;
-  if(s instanceof Date)return s;
-  if(typeof s==='number')return new Date((s-25569)*86400000);
-  // Handle ISO 8601 with Z or timezone offset e.g. "2026-05-01T20:00:26.375Z"
-  if(String(s).includes('T')){try{const d=new Date(s);if(!isNaN(d))return d;}catch(e){}}
-  let m=String(s).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4}),?\s+(\d{2}):(\d{2}):(\d{2})/);
-  if(m)return new Date(+m[3],+m[2]-1,+m[1],+m[4],+m[5],+m[6]);
-  m=String(s).match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
-  if(m)return new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]);
-  return null;
-}
-function parseMMSS(s){
-  if(!s||s==='-'||String(s).trim()==='')return null;
-  s=String(s).trim();
-  let days=0;
-  if(s.includes('day')){const dm=s.match(/(\d+)\s+day/);if(dm)days=+dm[1];s=s.replace(/\d+\s+days?,\s*/,'');}
-  const p=s.split(':');
-  try{if(p.length>=2)return days*1440+ +p[0]+ +p[1]/60;}catch(e){}
-  const n=parseFloat(s);return(!isNaN(n)&&n>=0&&n<1440)?n:null;
-}
-function getCSAT(r){
-  // Check all possible CSAT column names
-  const keys=['CSAT Rating','CSAT rating','csat rating','csat_rating','CSAT','Csat Rating','CSAT Score','csat score','Csat','Rating','csat'];
-  for(const k of keys){
-    const v=r[k];
-    if(v!==undefined&&v!==''&&v!==null&&String(v).trim()!==''&&!isNaN(parseFloat(v))){
-      const n=parseFloat(v);
-      if(n>=1&&n<=5)return Math.round(n);
-    }
+// ─── NORMALIZE ───────────────────────────────────────────────────────────────
+function norm(s){ return String(s||'').toLowerCase().replace(/[\-_]/g,' ').replace(/\s+/g,' ').trim(); }
+
+function fuzzyMatch(csName, salesNames){
+  const n = norm(csName);
+  // Check baked-in map first
+  const mapped = PROD_MAP[csName] || PROD_MAP[n];
+  if(mapped) return {name:mapped, type:'mapped', score:1};
+  // Exact after normalize
+  for(const s of salesNames){ if(norm(s)===n) return {name:s,type:'exact',score:1}; }
+  // Word overlap fuzzy
+  const wa=n.split(' ').filter(w=>w.length>2);
+  let best=null,bestScore=0;
+  for(const s of salesNames){
+    const wb=norm(s).split(' ').filter(w=>w.length>2);
+    let matches=0;
+    wa.forEach(w=>{ if(wb.some(ww=>ww.includes(w)||w.includes(ww))) matches++; });
+    const score=matches/Math.max(wa.length,wb.length);
+    if(score>bestScore){bestScore=score;best=s;}
   }
-  return null;
+  if(bestScore>=0.55) return {name:best,type:'fuzzy',score:bestScore};
+  return {name:null,type:'none',score:0};
 }
 
-// ─── STATS ────────────────────────────────────────────────────────────────────
-function pct(arr,p){if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const i=(p/100)*(s.length-1);const lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo);}
-function med(arr){return pct(arr,50);}
-function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
-function fmt(n,d=1){return isNaN(n)||n===null?'-':Number(n).toFixed(d);}
-function destroyC(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
-
-// ─── BUILD DATA ───────────────────────────────────────────────────────────────
-function buildData(aaRows, tktRows){
-  // Filter AA by source
-  // Always filter WhatsApp only
-  const wa=aaRows.filter(r=>{
-    const s=String(r['Source']||'').toLowerCase().trim();
-    return s==='whatsapp'||s==='whats app';
-  });
-
-  // Build Ticket ID → ticket lookup from Tickets All
-  const tktById={};
-  if(tktRows){
-    tktRows.forEach(r=>{
-      // Ticket Number in Tickets All matches Ticket ID in Agent Activity
-      const tnum=String(r['Ticket Number']||r['Ticket ID']||'').replace('#','').trim();
-      if(tnum) tktById[tnum]=r;
-    });
-  }
-
-  // Agent set
-  const agentSet=new Set();
-  wa.forEach(r=>{const a=String(r['Agent Name']||'').trim();if(a&&a!=='undefined')agentSet.add(a);});
-  const AGENTS=Array.from(agentSet).sort();
-  AGENTS.forEach(a=>agC(a));
-
-  const phoneFreq={},orderFreq={};
-  wa.forEach(r=>{
-    const p=String(r['Customer Phone']||'').replace(/\D/g,'').slice(-10);if(p)phoneFreq[p]=(phoneFreq[p]||0)+1;
-    const o=String(r['Order Name']||'');if(o&&o!=='-'&&o!=='nan')orderFreq[o]=(orderFreq[o]||0)+1;
-  });
-
-  // Process AA rows
-  const processed=wa.map(r=>{
-    const start=parseDT(r['Started At']),end=parseDT(r['Ended At']);
-    const resMin=(start&&end)?(end-start)/60000:null;
-    const rawPhoneAA=String(r['Customer Phone']||'');
-    const phoneCleanAA=rawPhoneAA.replace(/\D/g,'');
-    const phone=phoneCleanAA.slice(-10);
-    const order=String(r['Order Name']||'');
-
-    // Wait time from AA (user VLOOKUPs this)
-    const wtRaw=r['Wait Time']||r['wait_time']||r['WaitTime']||r['Wait time']||'';
-    const wtParsed=parseMMSS(String(wtRaw).trim());
-    const waitMin=wtParsed!==null?wtParsed:0; // include 0 for all chats
-    const hasWait=wtParsed!==null&&wtParsed>0;
-
-    // Get ticket data from Tickets All by Ticket ID (exact match)
-    const ticketId2=String(r['Ticket ID']||'').replace('#','').trim();
-    const bestTkt=tktById[ticketId2]||null;
-
-    const disposition=bestTkt?String(bestTkt['Disposition: L2 Disposition']||'').trim():'';
-    const product=bestTkt?String(bestTkt['Subcategory']||bestTkt['Disposition: Product Category']||'').trim():'';
-    const csatFromTkt=bestTkt?getCSAT(bestTkt):null;
-
-    return{
-      agent:String(r['Agent Name']||'').trim(),
-      phone,order,
-      customer:r['Customer Name']||'',
-      status:String(r['Status']||'').toLowerCase().trim(),
-      resMin:(resMin&&resMin>0&&resMin<1440)?resMin:null,
-      hour:start?start.getHours():null,
-      dow:start?start.getDay():null,
-      startDT:start,endDT:end,
-      isRepeat:phoneFreq[phone]>1?1:0,
-      ticketId:r['Ticket ID']||'',
-      frMin:parseMMSS(r['First Response Duration (mm:ss)']),
-      activeMin:parseMMSS(r['Active Time (mm:ss)']),
-      handoffReason:String(r['Handoff Reason']||''),
-      waitMin,hasWait,
-      disposition,product,
-      csat:csatFromTkt,
-      withinSLA:resMin!==null?resMin<=SLA_THRESHOLD:null,
-    };
-  });
-
-  const numDays=Math.max(1,new Set(processed.filter(r=>r.startDT).map(r=>r.startDT.toDateString())).size);
-
-  // Enhanced Repeat Logic
-  const dailyGroups = {};
-  const weeklyGroups = {};
-
-  processed.forEach(r=>{
-    if(!r.phone || !r.disposition || !r.startDT) return;
-
-    const dateKey = getDateKey(r.startDT);
-    const weekKey = getWeekKey(r.startDT);
-
-    const dailyKey = `${r.phone}__${r.disposition}__${dateKey}`;
-    const weeklyKey = `${r.phone}__${r.disposition}__${weekKey}`;
-
-    if(!dailyGroups[dailyKey]) dailyGroups[dailyKey] = [];
-    if(!weeklyGroups[weeklyKey]) weeklyGroups[weeklyKey] = [];
-
-    dailyGroups[dailyKey].push(r);
-    weeklyGroups[weeklyKey].push(r);
-  });
-
-  Object.values(dailyGroups).forEach(rows=>{
-    rows.sort((a,b)=>a.startDT-b.startDT);
-    rows.forEach((r,i)=>{
-      r.dailyRepeat = i>0 ? 1 : 0;
-    });
-  });
-
-  Object.values(weeklyGroups).forEach(rows=>{
-    rows.sort((a,b)=>a.startDT-b.startDT);
-    rows.forEach((r,i)=>{
-      r.weeklyRepeat = i>0 ? 1 : 0;
-    });
-  });
-
-
-  // Deduplicate DSATs — same customer phone on same day only counts once
-  // CSAT (4-5) kept as is, DSAT (1-3) deduplicated by phone+date
-  const dsatSeen=new Set();
-  const deduped=processed.map(r=>{
-    if(r.csat!==null&&r.csat<=3&&r.phone){
-      const dateStr=r.startDT?r.startDT.toDateString():'unknown';
-      const key=r.phone+'_'+dateStr;
-      if(dsatSeen.has(key)){
-        return{...r,csat:null}; // remove duplicate DSAT
-      }
-      dsatSeen.add(key);
-    }
-    return r;
-  });
-
-  return{wa:deduped,AGENTS,phoneFreq,orderFreq,numDays};
+function lookupL2(l2){
+  if(!l2) return null;
+  const k = String(l2).toLowerCase().trim();
+  return MASTER[k] || null;
 }
 
-// ─── EFFICIENCY SCORE ─────────────────────────────────────────────────────────
-function calcScore(agent,wa,teamMed,teamFR,hasCsat){
-  const rows=wa.filter(r=>r.agent===agent);
-  if(!rows.length)return{score:0,chatCount:0,m:'-',fr:'-',compP:'0',csatAvg:'-',rows:0};
-  const t=rows.map(r=>r.resMin).filter(v=>v!==null&&v>0);
-  const m=t.length?med(t):teamMed;
-  const frT=rows.map(r=>r.frMin).filter(v=>v!==null&&v>=0&&v<60);
-  const fr=frT.length?avg(frT):teamFR;
-  const comp=rows.filter(r=>r.status==='completed').length;
-  const compP=rows.length?comp/rows.length*100:0;
-  const csatR=rows.filter(r=>r.csat!==null);
-  const csatAvg=csatR.length?avg(csatR.map(r=>r.csat)):null;
-  const chatCount=rows.length;
-  const teamAvgChats=wa.length/Math.max(1,new Set(wa.map(r=>r.agent)).size);
-  const chatScore=Math.min(100,chatCount/Math.max(1,teamAvgChats)*100);
-  const rtScore=Math.max(0,Math.min(100,100-(m/Math.max(teamMed,1)-1)*60));
-  const frScore=Math.max(0,Math.min(100,100-(fr/Math.max(teamFR,1)-1)*40));
-  const csatScore=csatAvg!==null?Math.max(0,(csatAvg-1)/4*100):null;
-  let score;
-  if(hasCsat&&csatScore!==null){score=csatScore*.35+chatScore*.25+rtScore*.20+compP*.15+frScore*.10;}
-  else{score=chatScore*.35+rtScore*.30+compP*.20+frScore*.15;}
-  return{score:Math.round(score),chatCount,m:fmt(m),fr:fr<60?fmt(fr):'-',compP:compP.toFixed(0),csatAvg:csatAvg!==null?fmt(csatAvg):'-',rows:rows.length};
-}
-
-
-
-function getWeekKey(date){
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-  return `${d.getUTCFullYear()}-W${weekNum}`;
-}
-
-function getDateKey(date){
-  return date.toISOString().split('T')[0];
-}
-
-// ─── RENDER ALL ───────────────────────────────────────────────────────────────
-function renderAll(){
-  renderTab('summary');
-  const t=document.querySelector('.tab.active').textContent.toLowerCase().replace(/[^\w]/g,'');
-  const m={summary:'summary',resolution:'resolution',agents:'agents',efficiency:'efficiency',sla:'sla',hourlyload:'hourly',fcr:'fcr',repeat:'repeat',aibot:'aibot',orders:'orders',transfers:'transfers',csatdsat:'csat',roster:'roster'};
-  renderTab(m[t]||'summary');
-}
-
-// ─── RENDER TAB ───────────────────────────────────────────────────────────────
-function renderTab(name){
-  if(!G)return;
-  const{wa,AGENTS,phoneFreq,orderFreq,numDays}=G;
-  const total=wa.length;
-  const resTimes=wa.map(r=>r.resMin).filter(v=>v!==null&&v>0);
-  const hours=Array.from({length:16},(_,i)=>i+8);
-  const vols=hours.map(h=>wa.filter(r=>r.hour===h).length);
-  const teamMed=med(resTimes)||1;
-  const teamFR=avg(wa.map(r=>r.frMin).filter(v=>v!==null&&v>=0&&v<60))||1;
-  const hasCsat=wa.some(r=>r.csat!==null);
-
-  if(name==='summary'){
-    
-    
-    // WEEKLY OPERATIONS OVERVIEW
-    const dailyMap = {};
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-    wa.forEach(r=>{
-      if(!r.startDT)return;
-
-      const d = r.startDT.getDay();
-
-      if(!dailyMap[d]){
-        dailyMap[d]={
-          incoming:0,
-          csat:[],
-          wait:[],
-          dispositions:{}
-        };
-      }
-
-      dailyMap[d].incoming++;
-
-      if(r.csat!==null){
-        dailyMap[d].csat.push(r.csat);
-      }
-
-      if(r.waitMin!==null){
-        dailyMap[d].wait.push(r.waitMin);
-      }
-
-      if(r.disposition){
-        dailyMap[d].dispositions[r.disposition]=(dailyMap[d].dispositions[r.disposition]||0)+1;
-      }
-    });
-
-    document.getElementById('ops-weekly-body').innerHTML =
-    Object.keys(dailyMap)
-    .sort((a,b)=>a-b)
-    .map(d=>{
-
-      const row=dailyMap[d];
-
-      const topDisp=Object.entries(row.dispositions)
-        .sort((a,b)=>b[1]-a[1])[0];
-
-      return `
-        <tr>
-          <td><strong>${dayNames[d]}</strong></td>
-          <td>${row.incoming}</td>
-          <td>${row.csat.length?fmt(avg(row.csat),1):'-'}</td>
-          <td>${row.wait.length?fmt(avg(row.wait),1)+' min':'-'}</td>
-          <td>${topDisp?topDisp[0]:'-'}</td>
-        </tr>
-      `;
-    }).join('');
-
-    // WEEKLY DISPOSITION MATRIX
-
-    const dispMatrix = {};
-    const daysUsed = new Set();
-
-    wa.forEach(r=>{
-
-      if(!r.startDT || !r.disposition)return;
-
-      const day = dayNames[r.startDT.getDay()];
-      daysUsed.add(day);
-
-      if(!dispMatrix[r.disposition]){
-        dispMatrix[r.disposition]={};
-      }
-
-      dispMatrix[r.disposition][day] =
-        (dispMatrix[r.disposition][day]||0)+1;
-    });
-
-    const orderedDays =
-    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-    .filter(d=>daysUsed.has(d));
-
-    const dateMap = {};
-
-    wa.forEach(r=>{
-      if(!r.startDT)return;
-
-      const dName = dayNames[r.startDT.getDay()];
-      const dNum = r.startDT.getDate();
-      const month = r.startDT.toLocaleString('default',{month:'short'});
-
-      dateMap[dName] = `${dName} ${dNum} ${month}`;
-    });
-
-    const orderedDaysFormatted =
-      orderedDays.map(d=>dateMap[d] || d);
-
-    document.getElementById('weekly-disp-head').innerHTML=`
-    <tr>
-      <th>Disposition</th>
-      ${orderedDaysFormatted.map(d=>`<th>${d}</th>`).join('')}
-    </tr>
-    `;
-
-    
-document.getElementById('weekly-ops-card').style.display='block';
-document.getElementById('weekly-disp-break-card').style.display='block';
-
-document.getElementById('weekly-disp-body').innerHTML=
-    Object.entries(dispMatrix)
-    .sort((a,b)=>{
-      const ta=Object.values(a[1]).reduce((x,y)=>x+y,0);
-      const tb=Object.values(b[1]).reduce((x,y)=>x+y,0);
-      return tb-ta;
-    })
-    .slice(0,20)
-    .map(([disp,data])=>`
-    <tr>
-      <td><strong>${disp}</strong></td>
-      ${orderedDays.map(d=>`<td>${data[d]||0}</td>`).join('')}
-    </tr>
-    `).join('');
-
-    const comp=wa.filter(r=>r.status==='completed').length;
-    const trans=wa.filter(r=>r.status==='transferred').length;
-    const m2=med(resTimes),p75=pct(resTimes,75),p90=pct(resTimes,90);
-    const rep=wa.filter(r=>r.isRepeat).length;
-    const uniq=Object.keys(phoneFreq).length;
-    const frT=wa.map(r=>r.frMin).filter(v=>v!==null&&v>=0&&v<60);
-    const csatR=wa.filter(r=>r.csat!==null);
-    const slaOk=wa.filter(r=>r.withinSLA===true).length;
-    document.getElementById('kpi-summary').innerHTML=[
-      {l:'Total Chats',v:total,s:'WhatsApp only',c:''},
-      {l:'Completed',v:comp,s:(total?(comp/total*100).toFixed(1)+'%':''),c:'green'},
-      {l:'Transferred',v:trans,s:(total?(trans/total*100).toFixed(1)+'%':''),c:'amber'},
-      {l:'Median Res',v:fmt(m2)+' min',s:`75th:${fmt(p75)} 90th:${fmt(p90)}`,c:'blue'},
-      {l:'SLA (≤12 min)',v:slaOk,s:resTimes.length?(slaOk/resTimes.length*100).toFixed(1)+'%':'',c:resTimes.length&&slaOk/resTimes.length>=.8?'green':'red'},
-      {l:'Repeat Chats',v:rep,s:(total?(rep/total*100).toFixed(1)+'%':''),c:'red'},
-      {l:'Avg 1st Resp',v:frT.length?fmt(avg(frT))+' min':'-',c:'teal'},
-      {l:'Avg CSAT',v:csatR.length?fmt(avg(csatR.map(r=>r.csat)))+'/5':'No data',c:csatR.length&&avg(csatR.map(r=>r.csat))>=4?'green':csatR.length?'amber':''},
-      {l:'Agents',v:AGENTS.length,s:AGENTS.map(a=>a.split(' ')[0]).join(', '),c:'purple'},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
-    const bE=[0,5,10,20,30,45,60,Infinity],bL=['0-5','6-10','11-20','21-30','31-45','46-60','60+'];
-    destroyC('c-dist');CH['c-dist']=new Chart(document.getElementById('c-dist'),{type:'bar',data:{labels:bL,datasets:[{data:bL.map((_,i)=>resTimes.filter(v=>v>bE[i]&&v<=bE[i+1]).length),backgroundColor:['#16a34a','#16a34a','#ca8a04','#ca8a04','#dc2626','#dc2626','#991b1b'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-    const sMap={};wa.forEach(r=>{sMap[r.status]=(sMap[r.status]||0)+1;});
-    destroyC('c-status');CH['c-status']=new Chart(document.getElementById('c-status'),{type:'doughnut',data:{labels:Object.keys(sMap),datasets:[{data:Object.values(sMap),backgroundColor:['#16a34a','#1d4ed8','#ca8a04','#dc2626'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}}}});
-    destroyC('c-agent-vol');CH['c-agent-vol']=new Chart(document.getElementById('c-agent-vol'),{type:'bar',data:{labels:AGENTS.map(a=>a.split(' ')[0]),datasets:[{data:AGENTS.map(a=>wa.filter(r=>r.agent===a).length),backgroundColor:AGENTS.map(a=>agC(a)),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-    destroyC('c-hourly-mini');CH['c-hourly-mini']=new Chart(document.getElementById('c-hourly-mini'),{type:'line',data:{labels:hours.map(h=>h+':00'),datasets:[{data:vols,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.1)',fill:true,tension:.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},autoSkip:true,maxTicksLimit:8}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-  }
-
-  if(name==='resolution'){
-    const m2=med(resTimes),p75=pct(resTimes,75),p90=pct(resTimes,90);
-    document.getElementById('rt-stats').innerHTML=[['Median',fmt(m2)],['75th',fmt(p75)],['90th',fmt(p90)],['Average',fmt(avg(resTimes))],['Min',fmt(Math.min(...resTimes))],['Max',fmt(Math.max(...resTimes))]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px"><span style="color:#64748b">${l}</span><strong>${v} min</strong></div>`).join('');
-    const bE=[0,5,10,20,30,45,60,Infinity],bL=['0-5','6-10','11-20','21-30','31-45','46-60','60+'],bCols=['#16a34a','#16a34a','#ca8a04','#ca8a04','#dc2626','#dc2626','#991b1b'];
-    const maxC=Math.max(...bL.map((_,i)=>resTimes.filter(v=>v>bE[i]&&v<=bE[i+1]).length));
-    document.getElementById('rt-buckets').innerHTML=bL.map((l,i)=>{const cnt=resTimes.filter(v=>v>bE[i]&&v<=bE[i+1]).length;const w=maxC?cnt/maxC*100:0;return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f5f7fa"><span style="width:60px;font-size:11px;color:#64748b">${l}</span><div style="background:#f1f5f9;border-radius:4px;height:8px;flex:1;overflow:hidden"><div style="height:100%;border-radius:4px;background:${bCols[i]};width:${w}%"></div></div><span style="font-size:11px;font-weight:700;width:26px;text-align:right">${cnt}</span><span style="font-size:10px;color:#94a3b8;width:36px;text-align:right">${total?(cnt/total*100).toFixed(1):0}%</span></div>`;}).join('');
-    destroyC('c-agent-rt');CH['c-agent-rt']=new Chart(document.getElementById('c-agent-rt'),{type:'bar',data:{labels:AGENTS.map(a=>a.split(' ')[0]),datasets:[{data:AGENTS.map(a=>{const t=wa.filter(r=>r.agent===a).map(r=>r.resMin).filter(v=>v!==null&&v>0);return t.length?med(t):0;}),backgroundColor:AGENTS.map(a=>agC(a)),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}}}}}});
-  }
-
-  if(name==='agents'){
-    document.getElementById('agent-tbody').innerHTML=AGENTS.map(a=>{
-      const rows=wa.filter(r=>r.agent===a);if(!rows.length)return`<tr><td colspan="10" style="color:#ccc">${a}</td></tr>`;
-      const t=rows.map(r=>r.resMin).filter(v=>v!==null&&v>0);
-      const m2=t.length?med(t):0,p75=t.length?pct(t,75):0,p90=t.length?pct(t,90):0;
-      const comp=rows.filter(r=>r.status==='completed').length;
-      const frT=rows.map(r=>r.frMin).filter(v=>v!==null&&v>=0&&v<60);
-      const actT=rows.map(r=>r.activeMin).filter(v=>v!==null&&v>0&&v<480);
-      const vs=m2-teamMed;
-      return`<tr><td><span class="dot" style="background:${agC(a)}"></span><strong>${a}</strong></td><td><span class="badge ${isNew(a)?'ba':'bb'}">${isNew(a)?'New':'Senior'}</span></td><td><strong>${rows.length}</strong></td><td>${comp}(${rows.length?(comp/rows.length*100).toFixed(0):0}%)</td><td>${fmt(avg(t))}</td><td><strong>${fmt(m2)}</strong><span style="font-size:10px;color:${vs>3?'#dc2626':vs<-3?'#16a34a':'#94a3b8'}"> ${vs>0?'+':''}${fmt(vs)}</span></td><td>${fmt(p75)}</td><td>${fmt(p90)}</td><td>${frT.length?fmt(avg(frT)):'-'}</td><td>${actT.length?fmt(avg(actT)):'-'}</td></tr>`;
-    }).join('');
-    // Disposition from Tickets All join
-    const dispRows=wa.filter(r=>r.disposition&&r.disposition!=='');
-    const dn=document.getElementById('disp-note'),dc=document.getElementById('disp-content');
-    if(!dispRows.length){dn.style.display='block';dc.style.display='none';}
-    else{
-      dn.style.display='none';dc.style.display='block';
-      const dm={};dispRows.forEach(r=>{if(!dm[r.disposition])dm[r.disposition]={count:0,res:[]};dm[r.disposition].count++;if(r.resMin)dm[r.disposition].res.push(r.resMin);});
-      const da=Object.entries(dm).sort((a,b)=>b[1].count-a[1].count);
-      document.getElementById('disp-tbody').innerHTML=da.slice(0,10).map(([d,v])=>`<tr><td><strong>${d}</strong></td><td><span class="badge bb">${v.count}</span></td><td>${fmt(v.res.length?avg(v.res):0)}</td><td><strong>${fmt(v.res.length?med(v.res):0)}</strong></td><td>${total?(v.count/total*100).toFixed(1):0}%</td></tr>`).join('');
-      const t8=da.slice(0,8);
-      destroyC('c-disp-rt');CH['c-disp-rt']=new Chart(document.getElementById('c-disp-rt'),{type:'bar',data:{labels:t8.map(([d])=>d.length>16?d.substring(0,14)+'..':d),datasets:[{label:'Volume',data:t8.map(([,v])=>v.count),backgroundColor:'#3b82f6',borderRadius:3,yAxisID:'y'},{label:'Median Res',data:t8.map(([,v])=>v.res.length?med(v.res):0),backgroundColor:'#f59e0b',borderRadius:3,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,padding:6}}},scales:{x:{ticks:{font:{size:9},maxRotation:30}},y:{ticks:{font:{size:9}},beginAtZero:true,title:{display:true,text:'Volume',font:{size:9}}},y1:{ticks:{font:{size:9}},beginAtZero:true,position:'right',title:{display:true,text:'Min',font:{size:9}},grid:{drawOnChartArea:false}}}}});
-      document.getElementById('agent-disp-tbody').innerHTML=AGENTS.map(a=>{
-        const ar=wa.filter(r=>r.agent===a&&r.disposition&&r.disposition!=='');if(!ar.length)return`<tr><td><span class="dot" style="background:${agC(a)}"></span>${a}</td><td colspan="5" style="color:#ccc">No disposition data</td></tr>`;
-        const am={};ar.forEach(r=>{if(!am[r.disposition])am[r.disposition]={count:0,res:[]};am[r.disposition].count++;if(r.resMin)am[r.disposition].res.push(r.resMin);});
-        const sorted=Object.entries(am).sort((a2,b)=>b[1].count-a2[1].count);
-        const t1=sorted[0]||['-',{count:0,res:[]}],t2=sorted[1]||['-',{count:0,res:[]}];
-        return`<tr><td><span class="dot" style="background:${agC(a)}"></span><strong>${a}</strong></td><td>${t1[0]}</td><td><span class="badge bb">${t1[1].count}</span></td><td style="color:#64748b">${t2[0]}</td><td><span class="badge bgr">${t2[1].count}</span></td><td>${t1[1].res.length?fmt(avg(t1[1].res))+' min':'-'}</td></tr>`;
-      }).join('');
-    }
-  }
-
-  if(name==='efficiency'){
-    const scores=AGENTS.map(a=>({a,...calcScore(a,wa,teamMed,teamFR,hasCsat)})).sort((a,b)=>b.score-a.score);
-    const top=scores[0];
-    document.getElementById('aod-wrap').innerHTML=`<div class="aod-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px"><div><div class="aod-trophy">&#127942;</div><div class="aod-title">Agent of the Day</div><div class="aod-name">${top.a}</div><div style="display:flex;align-items:center;gap:10px"><div><div class="aod-score">${top.score}</div><div style="font-size:10px;opacity:.5">/ 100</div></div><div style="margin-left:6px;font-size:11px;opacity:.6">${hasCsat?'Includes CSAT':'No CSAT yet — add CSAT column'}</div></div></div><div class="aod-stats"><div class="aod-stat"><div class="sv">${top.chatCount}</div><div class="sl">Chats</div></div><div class="aod-stat"><div class="sv">${top.m} min</div><div class="sl">Median Res</div></div><div class="aod-stat"><div class="sv">${top.compP}%</div><div class="sl">Completion</div></div><div class="aod-stat"><div class="sv">${top.fr} min</div><div class="sl">1st Resp</div></div>${hasCsat?`<div class="aod-stat"><div class="sv">${top.csatAvg}/5</div><div class="sl">CSAT</div></div>`:''}</div></div></div>`;
-    const medals=[{l:'&#127942; Top',c:'gold'},{l:'&#129352; 2nd',c:'blue'},{l:'&#129353; 3rd',c:'purple'}];
-    document.getElementById('kpi-efficiency').innerHTML=scores.slice(0,Math.min(3,scores.length)).map((s,i)=>`<div class="kpi ${medals[i].c}"><div class="lbl">${medals[i].l}</div><div class="val">${s.a.split(' ')[0]}</div><div class="sub">${s.score}/100</div></div>`).join('');
-    destroyC('c-efficiency');CH['c-efficiency']=new Chart(document.getElementById('c-efficiency'),{type:'bar',data:{labels:scores.map(s=>s.a.split(' ')[0]),datasets:[{data:scores.map(s=>s.score),backgroundColor:scores.map(s=>s.score>=75?'#16a34a':s.score>=55?'#ca8a04':'#dc2626'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true,max:100}}}});
-    destroyC('c-active-vs-res');CH['c-active-vs-res']=new Chart(document.getElementById('c-active-vs-res'),{type:'bar',data:{labels:AGENTS.map(a=>a.split(' ')[0]),datasets:[{label:'Median Res',data:AGENTS.map(a=>{const t=wa.filter(r=>r.agent===a).map(r=>r.resMin).filter(v=>v!==null&&v>0);return t.length?med(t):0;}),backgroundColor:'#3b82f6',borderRadius:3},{label:'Avg Active',data:AGENTS.map(a=>{const t=wa.filter(r=>r.agent===a).map(r=>r.activeMin).filter(v=>v!==null&&v>0&&v<480);return t.length?avg(t):0;}),backgroundColor:'#8b5cf6',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,padding:6}}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-    document.getElementById('eff-tbody').innerHTML=scores.map((s,i)=>`<tr><td style="font-weight:700;color:${i===0?'#b45309':i===1?'#1d4ed8':i===2?'#7c3aed':'#64748b'}">${i===0?'&#127942;':i===1?'&#129352;':i===2?'&#129353;':i+1}</td><td><span class="dot" style="background:${agC(s.a)}"></span>${s.a}</td><td><strong style="font-size:15px;color:${s.score>=75?'#16a34a':s.score>=55?'#ca8a04':'#dc2626'}">${s.score}</strong></td><td>${s.chatCount}</td><td>${s.m} min</td><td>${s.fr} min</td><td>${s.compP}%</td><td>${s.csatAvg!=='-'?s.csatAvg+'/5':'-'}</td><td><span class="badge ${s.score>=75?'bg':s.score>=55?'ba':'br'}">${s.score>=75?'Excellent':s.score>=55?'Good':'Needs attention'}</span></td></tr>`).join('');
-  }
-
-  if(name==='sla'){
-    const withRes=wa.filter(r=>r.resMin!==null);
-    const slaOk=withRes.filter(r=>r.withinSLA).length;
-    const slaBreach=withRes.filter(r=>!r.withinSLA).length;
-    const slaRate=withRes.length?slaOk/withRes.length:0;
-    document.getElementById('kpi-sla').innerHTML=[
-      {l:'Chats Measured',v:withRes.length,s:'with resolution time',c:''},
-      {l:'Within SLA (≤12 min)',v:slaOk,s:(withRes.length?(slaOk/withRes.length*100).toFixed(1)+'%':''),c:slaRate>=.8?'green':'red'},
-      {l:'SLA Breached',v:slaBreach,s:(withRes.length?(slaBreach/withRes.length*100).toFixed(1)+'%':''),c:'red'},
-      {l:'SLA Rate',v:(slaRate*100).toFixed(1)+'%',s:slaRate>=.8?'Target met':'Below 80% target',c:slaRate>=.8?'green':'red'},
-      {l:'Avg Breach (min)',v:fmt(avg(withRes.filter(r=>!r.withinSLA).map(r=>r.resMin))),s:'over 12 min',c:'amber'},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
-
-    document.getElementById('sla-tbody').innerHTML=AGENTS.map(a=>{
-      const rows=wa.filter(r=>r.agent===a&&r.resMin!==null);if(!rows.length)return`<tr><td colspan="7" style="color:#ccc">${a}</td></tr>`;
-      const ok=rows.filter(r=>r.withinSLA).length,breach=rows.filter(r=>!r.withinSLA).length;
-      const rate=rows.length?ok/rows.length:0;
-      return`<tr><td><span class="dot" style="background:${agC(a)}"></span><strong>${a}</strong></td><td>${rows.length}</td><td style="color:#16a34a;font-weight:700">${ok}</td><td><div class="sla-bar"><div class="sla-fill" style="width:${rate*100}%;background:${rate>=.8?'#16a34a':'#dc2626'}"></div></div><span style="font-size:11px;font-weight:700;color:${rate>=.8?'#16a34a':'#dc2626'}">${(rate*100).toFixed(1)}%</span></td><td style="color:#dc2626;font-weight:700">${breach}</td><td><span style="color:#dc2626;font-size:11px">${(breach/rows.length*100).toFixed(1)}%</span></td><td><span class="badge ${rate>=.8?'bg':rate>=.6?'ba':'br'}">${rate>=.8?'Good':rate>=.6?'Fair':'Poor'}</span></td></tr>`;
-    }).join('');
-
-    const hourSLABreachCounts=hours.map(h=>wa.filter(r=>r.hour===h&&r.withinSLA===false).length);
-    const hourSLAOkCounts=hours.map(h=>wa.filter(r=>r.hour===h&&r.withinSLA===true).length);
-    destroyC('c-sla-hour');CH['c-sla-hour']=new Chart(document.getElementById('c-sla-hour'),{type:'bar',data:{labels:hours.map(h=>h+':00'),datasets:[{label:'Within SLA',data:hourSLAOkCounts,backgroundColor:'#16a34a',borderRadius:3,stack:'s'},{label:'Breached',data:hourSLABreachCounts,backgroundColor:'#dc2626',borderRadius:3,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:10},autoSkip:false},stacked:true},y:{ticks:{font:{size:11}},beginAtZero:true,stacked:true}}}});
-
-    const breachTimes=withRes.filter(r=>!r.withinSLA).map(r=>r.resMin-SLA_THRESHOLD);
-    const bE=[0,5,10,20,30,60,Infinity],bL=['1-5 over','5-10 over','10-20 over','20-30 over','30-60 over','60+ over'];
-    destroyC('c-sla-dist');CH['c-sla-dist']=new Chart(document.getElementById('c-sla-dist'),{type:'bar',data:{labels:bL,datasets:[{data:bL.map((_,i)=>breachTimes.filter(v=>v>bE[i]&&v<=bE[i+1]).length),backgroundColor:['#fbbf24','#f97316','#ef4444','#dc2626','#b91c1c','#7f1d1d'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-  }
-
-  if(name==='hourly'){
-    document.getElementById('days-lbl').textContent=numDays>1?`(${numDays} days)`:'';;
-    const dv=hourlyView==='avg'?vols.map(v=>+(v/numDays).toFixed(1)):vols;
-    const caps=hours.map(h=>ROSTER_CAP[h]||0);
-    destroyC('c-hourly-full');CH['c-hourly-full']=new Chart(document.getElementById('c-hourly-full'),{type:'bar',data:{labels:hours.map(h=>h+':00'),datasets:[{label:hourlyView==='avg'?'Avg/Day':'Total',data:dv,backgroundColor:dv.map((v,i)=>v>(caps[i]||0)?'#dc2626':v>(caps[i]||0)*.85?'#f59e0b':'#3b82f6'),borderRadius:3,order:2},{label:'Capacity',data:caps,type:'line',borderColor:'#16a34a',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:11},autoSkip:false}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-
-    // Hourly incoming + wait time overlay
-    const hasWT=wa.some(r=>r.hasWait);
-    document.getElementById('wt-overlay-note').style.display=hasWT?'none':'block';
-    const hourAvgWT=hours.map(h=>{const t=wa.filter(r=>r.hour===h);return t.length?avg(t.map(r=>r.waitMin)):0;});
-    destroyC('c-wt-overlay');CH['c-wt-overlay']=new Chart(document.getElementById('c-wt-overlay'),{type:'bar',data:{labels:hours.map(h=>h+':00'),datasets:[{label:'Incoming Chats',data:dv,backgroundColor:'rgba(59,130,246,.6)',borderRadius:3,yAxisID:'y',order:2},{label:'Avg Wait Time (min)',data:hourAvgWT,type:'line',borderColor:'#ef4444',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#ef4444',yAxisID:'y1',order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:10},autoSkip:false}},y:{ticks:{font:{size:11}},beginAtZero:true,title:{display:true,text:'Chats',font:{size:10}}},y1:{ticks:{font:{size:11}},beginAtZero:true,position:'right',title:{display:true,text:'Wait (min)',font:{size:10}},grid:{drawOnChartArea:false}}}}});
-
-    // Day pattern
-    const dowNames={0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
-    const dayV={};wa.forEach(r=>{if(r.dow!==null){const d=dowNames[r.dow];dayV[d]=(dayV[d]||0)+1;}});
-    const sd=Object.entries(dayV).sort((a,b)=>b[1]-a[1]);
-    const lightDay=sd.length?sd[sd.length-1][0]:'Sunday';
-    destroyC('c-daily-pattern');if(Object.keys(dayV).length>0){CH['c-daily-pattern']=new Chart(document.getElementById('c-daily-pattern'),{type:'bar',data:{labels:sd.map(([d])=>d),datasets:[{data:sd.map(([,v])=>v),backgroundColor:sd.map(([d])=>d===lightDay?'#16a34a':d===sd[0][0]?'#dc2626':'#3b82f6'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:12}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});}
-
-    // Hourly table
-    document.getElementById('hourly-thead').innerHTML=`<th>Hour</th><th>${hourlyView==='avg'?'Avg/Day':'Vol'}</th><th>Needed</th><th>Status</th>${AGENTS.map(a=>`<th style="font-size:10px">${a.split(' ')[0]}</th>`).join('')}`;
-    document.getElementById('hourly-tbody').innerHTML=hours.map(h=>{
-      const vol=wa.filter(r=>r.hour===h).length;
-      const dv2=hourlyView==='avg'?+(vol/numDays).toFixed(1):vol;
-      const cap=ROSTER_CAP[h]||40,needed=dv2>0?Math.ceil(dv2/12.75):0;
-      const util=cap?dv2/cap:0,isOv=h>=13&&h<=16;
-      const sc=dv2===0?'<span style="color:#94a3b8">-</span>':util>1?'<span style="color:#dc2626;font-weight:700">Over</span>':util>.85?'<span style="color:#d97706">Tight</span>':util>.5?'<span style="color:#16a34a">Good</span>':'<span style="color:#94a3b8">Light</span>';
-      const agCells=AGENTS.map(a=>{const cnt=wa.filter(r=>r.hour===h&&r.agent===a).length;const dv3=hourlyView==='avg'?+(cnt/numDays).toFixed(1):cnt;return`<td style="text-align:center;font-weight:${cnt>0?'700':'400'};color:${cnt>0?agC(a):'#e2e8f0'}">${cnt>0?dv3:'-'}</td>`;}).join('');
-      return`<tr style="background:${isOv?'#fefce8':''}"><td><strong>${String(h).padStart(2,'0')}:00</strong>${isOv?' <span class="badge bg" style="font-size:8px">peak</span>':''}</td><td><strong>${dv2}</strong></td><td style="color:${needed>AGENTS.length?'#dc2626':'#16a34a'};font-weight:700">${needed||'-'}</td><td>${sc}</td>${agCells}</tr>`;
-    }).join('');
-
-    // Wait time detail
-    const hasAnyWT=wa.some(r=>r.hasWait);
-    const wn=document.getElementById('wt-note'),wc=document.getElementById('wt-content');
-    if(!hasAnyWT){wn.style.display='block';wc.style.display='none';}
-    else{
-      wn.style.display='none';wc.style.display='block';
-      // All chats - waitMin includes 0 for those without wait
-      const allWT=wa.map(r=>r.waitMin);
-      const waitingOnly=wa.filter(r=>r.hasWait).map(r=>r.waitMin);
-      const avgAll=avg(allWT),medAll=med(allWT),avgWaiting=avg(waitingOnly),pctHadWait=total?wa.filter(r=>r.hasWait).length/total:0;
-      document.getElementById('kpi-wt').innerHTML=[
-        {l:'Total Chats',v:total,s:'all included in avg',c:''},
-        {l:'Avg Wait (all chats)',v:fmt(avgAll)+' min',s:'includes 0 for instant',c:avgAll>5?'amber':'green'},
-        {l:'Had Wait >0',v:wa.filter(r=>r.hasWait).length,s:(pctHadWait*100).toFixed(1)+'% of chats',c:''},
-        {l:'Avg Wait (waiting only)',v:fmt(avgWaiting)+' min',s:'chats that waited',c:avgWaiting>10?'red':avgWaiting>5?'amber':'green'},
-        {l:'Max Wait',v:fmt(Math.max(...waitingOnly.concat([0])))+' min',c:'red'},
-      ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
-      // Distribution of chats that waited
-      const wbE=[0,1,3,5,10,15,30,Infinity],wbL=['0-1','1-3','3-5','5-10','10-15','15-30','30+'];
-      destroyC('c-wt-dist');CH['c-wt-dist']=new Chart(document.getElementById('c-wt-dist'),{type:'bar',data:{labels:wbL.map(l=>l+' min'),datasets:[{data:wbL.map((_,i)=>waitingOnly.filter(v=>v>wbE[i]&&v<=wbE[i+1]).length),backgroundColor:['#16a34a','#16a34a','#84cc16','#f59e0b','#f97316','#dc2626','#991b1b'],borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-      document.getElementById('wt-agent-tbody').innerHTML=AGENTS.map(a=>{
-        const rows=wa.filter(r=>r.agent===a);if(!rows.length)return`<tr><td>${a}</td><td colspan="6" style="color:#ccc">No data</td></tr>`;
-        const allWt=rows.map(r=>r.waitMin);
-        const waitOnly=rows.filter(r=>r.hasWait).map(r=>r.waitMin);
-        const avgA=avg(allWt),avgW=waitOnly.length?avg(waitOnly):0,maxW=waitOnly.length?Math.max(...waitOnly):0;
-        return`<tr><td><span class="dot" style="background:${agC(a)}"></span><strong>${a}</strong></td><td>${rows.length}</td><td>${waitOnly.length}</td><td style="font-weight:700;color:${avgA>5?'#d97706':avgA>2?'#ca8a04':'#16a34a'}">${fmt(avgA)} min</td><td>${fmt(avgW)} min</td><td>${fmt(maxW)} min</td><td><span class="badge ${avgA<=2?'bg':avgA<=5?'ba':'br'}">${avgA<=2?'Fast':avgA<=5?'Avg':'Slow'}</span></td></tr>`;
-      }).join('');
-    }
-  }
-
-  if(name==='fcr'){
-    // FCR = unique customers who contacted exactly once
-    const uniq=Object.keys(phoneFreq).length;
-    const fcr=Object.entries(phoneFreq).filter(([,v])=>v===1).length;
-    const fcrRate=uniq?fcr/uniq:0;
-    document.getElementById('kpi-fcr').innerHTML=[
-      {l:'Unique Customers',v:uniq,c:''},
-      {l:'Resolved 1st Contact',v:fcr,s:(fcrRate*100).toFixed(1)+'% FCR',c:fcrRate>=.7?'green':'amber'},
-      {l:'Contacted Again',v:uniq-fcr,s:((1-fcrRate)*100).toFixed(1)+'% bounced back',c:'red'},
-      {l:'Team FCR Rate',v:(fcrRate*100).toFixed(1)+'%',s:fcrRate>=.7?'Good FCR':'Needs improvement',c:fcrRate>=.7?'green':'red'},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
-
-    // FCR by agent
-    document.getElementById('fcr-agent-tbody').innerHTML=AGENTS.map(a=>{
-      const rows=wa.filter(r=>r.agent===a);if(!rows.length)return`<tr><td colspan="6" style="color:#ccc">${a}</td></tr>`;
-      const agPhones=new Set(rows.map(r=>r.phone).filter(Boolean));
-      const agFCR=[...agPhones].filter(p=>phoneFreq[p]===1).length;
-      const agRate=agPhones.size?agFCR/agPhones.size:0;
-      return`<tr><td><span class="dot" style="background:${agC(a)}"></span><strong>${a}</strong></td><td>${agPhones.size}</td><td style="color:#16a34a;font-weight:700">${agFCR}</td><td><strong>${(agRate*100).toFixed(1)}%</strong></td><td>${agPhones.size-agFCR}</td><td><span class="badge ${agRate>=.7?'bg':agRate>=.5?'ba':'br'}">${agRate>=.7?'Good':agRate>=.5?'Fair':'Low'}</span></td></tr>`;
-    }).join('');
-
-    destroyC('c-fcr-agent');CH['c-fcr-agent']=new Chart(document.getElementById('c-fcr-agent'),{type:'bar',data:{labels:AGENTS.map(a=>{const rows=wa.filter(r=>r.agent===a);const phones=new Set(rows.map(r=>r.phone).filter(Boolean));const fcr2=[...phones].filter(p=>phoneFreq[p]===1).length;return a.split(' ')[0];}),datasets:[{label:'FCR %',data:AGENTS.map(a=>{const rows=wa.filter(r=>r.agent===a);const phones=new Set(rows.map(r=>r.phone).filter(Boolean));if(!phones.size)return 0;const fcr2=[...phones].filter(p=>phoneFreq[p]===1).length;return+(fcr2/phones.size*100).toFixed(1);}),backgroundColor:AGENTS.map(a=>{const rows=wa.filter(r=>r.agent===a);const phones=new Set(rows.map(r=>r.phone).filter(Boolean));if(!phones.size)return '#e5e7eb';const fcr2=[...phones].filter(p=>phoneFreq[p]===1).length;const rate=fcr2/phones.size;return rate>=.7?'#16a34a':rate>=.5?'#ca8a04':'#dc2626';}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true,max:100}}}});
-
-    // FCR by disposition
-    const dispRows=wa.filter(r=>r.disposition&&r.disposition!=='');
-    const fd=document.getElementById('fcr-disp-note'),fc=document.getElementById('fcr-disp-content');
-    if(!dispRows.length){fd.style.display='block';fc.style.display='none';}
-    else{
-      fd.style.display='none';fc.style.display='block';
-      const dm={};
-      dispRows.forEach(r=>{
-        if(!dm[r.disposition])dm[r.disposition]={phones:new Set(),total:0,res:[]};
-        dm[r.disposition].total++;
-        if(r.phone)dm[r.disposition].phones.add(r.phone);
-        if(r.resMin)dm[r.disposition].res.push(r.resMin);
-      });
-      const da=Object.entries(dm).sort((a,b)=>b[1].total-a[1].total).slice(0,15);
-      document.getElementById('fcr-disp-tbody').innerHTML=da.map(([d,v])=>{
-        const phonesArr=[...v.phones];
-        const fcr2=phonesArr.filter(p=>phoneFreq[p]===1).length;
-        const bounced=phonesArr.length-fcr2;
-        const rate=phonesArr.length?fcr2/phonesArr.length:0;
-        const avgRes=v.res.length?avg(v.res):0;
-        return`<tr><td><strong>${d}</strong></td><td>${v.total}</td><td style="color:#16a34a;font-weight:700">${fcr2}</td><td><strong>${(rate*100).toFixed(1)}%</strong></td><td style="color:#dc2626">${bounced}</td><td>${((1-rate)*100).toFixed(1)}%</td><td>${fmt(avgRes)} min</td><td><span class="badge ${rate>=.7?'bg':rate>=.5?'ba':'br'}">${rate>=.7?'Resolved':'Bouncing'}</span></td></tr>`;
-      }).join('');
-    }
-  }
-
-  if(name==='repeat'){
-    const rep=wa.filter(r=>r.isRepeat).length;
-    document.getElementById('kpi-repeat').innerHTML=[
-      {l:'Total Chats',v:total,c:''},
-      {l:'Repeat Chats',v:rep,c:'red'},
-      {l:'Repeat Chat %',v:(total?rep/total*100:0).toFixed(1)+'%',c:'red'},
-      {l:'Unique Customers',v:Object.keys(phoneFreq).length,c:''},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div></div>`).join('');
-    document.getElementById('repeat-tbody').innerHTML=AGENTS.map(a=>{const rows=wa.filter(r=>r.agent===a);const r2=rows.filter(r=>r.isRepeat).length;const p2=rows.length?r2/rows.length*100:0;return`<tr><td><span class="dot" style="background:${agC(a)}"></span>${a}</td><td>${rows.length}</td><td>${r2}</td><td><strong>${p2.toFixed(1)}%</strong></td><td><span class="badge ${p2>60?'br':p2>40?'ba':'bg'}">${p2>60?'High':p2>40?'Mid':'Low'}</span></td></tr>`;}).join('');
-    const fb={'1':0,'2':0,'3':0,'4+':0};Object.values(phoneFreq).forEach(c=>{if(c===1)fb['1']++;else if(c===2)fb['2']++;else if(c===3)fb['3']++;else fb['4+']++;});
-    destroyC('c-freq');CH['c-freq']=new Chart(document.getElementById('c-freq'),{type:'bar',data:{labels:['1 contact','2 contacts','3 contacts','4+ contacts'],datasets:[{data:Object.values(fb),backgroundColor:['#16a34a','#ca8a04','#dc2626','#991b1b'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-  }
-
-  
-  if(name==='repeat'){
-    const dowNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-    const dailyStats={};
-
-    wa.forEach(r=>{
-      if(!r.startDT) return;
-
-      const day=dowNames[r.startDT.getDay()];
-
-      if(!dailyStats[day]){
-        dailyStats[day]={
-          incoming:0,
-          repeat:0,
-          dispositions:{}
-        };
-      }
-
-      dailyStats[day].incoming++;
-
-      if(r.dailyRepeat){
-        dailyStats[day].repeat++;
-
-        if(r.disposition){
-          dailyStats[day].dispositions[r.disposition]=(dailyStats[day].dispositions[r.disposition]||0)+1;
-        }
-      }
-    });
-
-    const totalWeeklyRepeat = wa.filter(r=>r.weeklyRepeat).length;
-    const totalDailyRepeat = wa.filter(r=>r.dailyRepeat).length;
-
-    const weeklyPct = total ? (totalWeeklyRepeat/total*100) : 0;
-    const dailyPct = total ? (totalDailyRepeat/total*100) : 0;
-
-    const repeatDispositions = {};
-
-    wa.forEach(r=>{
-      if(!r.disposition) return;
-
-      if(!repeatDispositions[r.disposition]){
-        repeatDispositions[r.disposition]={
-          total:0,
-          repeat:0
-        };
-      }
-
-      repeatDispositions[r.disposition].total++;
-
-      if(r.weeklyRepeat){
-        repeatDispositions[r.disposition].repeat++;
-      }
-    });
-
-    const topRepeatDisposition = Object.entries(repeatDispositions)
-      .sort((a,b)=>b[1].repeat-a[1].repeat)[0];
-
-    const highestDay = Object.entries(dailyStats)
-      .sort((a,b)=>(b[1].repeat/b[1].incoming)-(a[1].repeat/a[1].incoming))[0];
-
-    document.getElementById('kpi-repeat').innerHTML=[
-      {
-        l:'Daily Repeat %',
-        v:dailyPct.toFixed(1)+'%',
-        s:`${totalDailyRepeat} repeat chats`,
-        c:dailyPct<10?'green':'red'
-      },
-      {
-        l:'Weekly Repeat %',
-        v:weeklyPct.toFixed(1)+'%',
-        s:`${totalWeeklyRepeat} repeat chats`,
-        c:weeklyPct<20?'green':'amber'
-      },
-      {
-        l:'Highest Repeat Day',
-        v:highestDay?highestDay[0]:'-',
-        s:highestDay?((highestDay[1].repeat/highestDay[1].incoming)*100).toFixed(1)+'%':'-',
-        c:'blue'
-      },
-      {
-        l:'Top Repeat Issue',
-        v:topRepeatDisposition?topRepeatDisposition[0].substring(0,18):'-',
-        s:topRepeatDisposition?topRepeatDisposition[1].repeat+' repeats':'-',
-        c:'amber'
-      }
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
-
-    document.getElementById('repeat-day-tbody').innerHTML=
-      Object.entries(dailyStats)
-      .map(([day,v])=>{
-
-        const pct=v.incoming?(v.repeat/v.incoming*100):0;
-
-        const topDisp=Object.entries(v.dispositions)
-          .sort((a,b)=>b[1]-a[1])[0];
-
-        return `
-          <tr>
-            <td><strong>${day}</strong></td>
-            <td>${v.incoming}</td>
-            <td style="color:#dc2626;font-weight:700">${v.repeat}</td>
-            <td>
-              <span class="badge ${pct<10?'bg':pct<20?'ba':'br'}">
-                ${pct.toFixed(1)}%
-              </span>
-            </td>
-            <td>${topDisp?topDisp[0]:'-'}</td>
-          </tr>
-        `;
-      }).join('');
-
-    document.getElementById('repeat-disp-tbody').innerHTML=
-      Object.entries(repeatDispositions)
-      .sort((a,b)=>b[1].repeat-a[1].repeat)
-      .slice(0,15)
-      .map(([d,v])=>{
-
-        const pct=v.total?(v.repeat/v.total*100):0;
-
-        return `
-          <tr>
-            <td><strong>${d}</strong></td>
-            <td>${v.total}</td>
-            <td style="color:#dc2626;font-weight:700">${v.repeat}</td>
-            <td>
-              <span class="badge ${pct<10?'bg':pct<20?'ba':'br'}">
-                ${pct.toFixed(1)}%
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-    document.getElementById('repeat-tbody').innerHTML=
-      AGENTS.map(a=>{
-
-        const rows=wa.filter(r=>r.agent===a);
-
-        const repeats=rows.filter(r=>r.weeklyRepeat).length;
-
-        const pct=rows.length?(repeats/rows.length*100):0;
-
-        return `
-          <tr>
-            <td><span class="dot" style="background:${agC(a)}"></span><strong>${a}</strong></td>
-            <td>${rows.length}</td>
-            <td style="color:#dc2626;font-weight:700">${repeats}</td>
-            <td>
-              <span class="badge ${pct<10?'bg':pct<20?'ba':'br'}">
-                ${pct.toFixed(1)}%
-              </span>
-            </td>
-            <td>
-              <span class="badge ${pct<10?'bg':pct<20?'ba':'br'}">
-                ${pct<10?'Healthy':pct<20?'Monitor':'High'}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-    const orderedDays=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-    destroyC('c-repeat-daily');
-
-    // Store daily stats globally for filter function
-    window._repeatDailyStats = dailyStats;
-    window._repeatDailyDispositions = repeatDispositions;
-    window._orderedDays = orderedDays;
-
-    // Populate disposition filter dropdown
-    const sel=document.getElementById('repeat-disp-filter');
-    // Only add options if not already populated
-    if(sel.options.length<=1){
-      Object.entries(repeatDispositions)
-        .filter(([,v])=>v.total>0)
-        .sort((a,b)=>b[1].total-a[1].total)
-        .forEach(([d])=>{
-          const opt=document.createElement('option');
-          opt.value=d;opt.textContent=d;
-          sel.appendChild(opt);
-        });
-    }
-
-    renderRepeatDailyChart('all');
-  }
-
-
-
-  
-  
-  
-  if(name==='aibot'){
-
-    const ticketRows = tktRows || [];
-    const agentRows = aaRows || [];
-
-    function cleanPhone(v){
-      if(!v) return '';
-      let s = String(v).replace(/[^0-9]/g,'');
-      if(s.length>10) s=s.slice(-10);
-      return s;
-    }
-
-    const totalDemand = ticketRows.length;
-
-    const aiRows = ticketRows.filter(r =>
-      String(r['Status'] || '')
-      .toLowerCase()
-      .includes('resolved by ai')
-    );
-
-    const agentPhones = new Set();
-
-    agentRows.forEach(r=>{
-      const p = cleanPhone(
-        r['Phone'] ||
-        r['Customer Phone'] ||
-        r['phone']
-      );
-      if(p) agentPhones.add(p);
-    });
-
-    let matched = 0;
-    let botHandled = 0;
-    let repeat = 0;
-    let surveys = 0;
-    let csat = 0;
-    let dsat = 0;
-
-    const repeatMap = {};
-    const taskMap = {};
-    const statusMap = {};
-
-    ticketRows.forEach(r=>{
-      const s = String(r['Status'] || 'Unknown').trim();
-      statusMap[s] = (statusMap[s] || 0) + 1;
-    });
-
-    aiRows.forEach(r=>{
-
-      const phone = cleanPhone(
-        r['Customer Phone'] ||
-        r['Phone']
-      );
-
-      const task = String(
-        r['Task Names'] ||
-        r['Task Name'] ||
-        r['Task'] ||
-        'General Support'
-      );
-
-      if(!taskMap[task]){
-        taskMap[task]={
-          ai:0,
-          esc:0,
-          repeat:0,
-          csat:0,
-          dsat:0
-        };
-      }
-
-      taskMap[task].ai++;
-
-      if(phone && agentPhones.has(phone)){
-        matched++;
-        taskMap[task].esc++;
-      }else{
-        botHandled++;
-      }
-
-      const repeatKey = task + '__' + phone;
-      repeatMap[repeatKey] = (repeatMap[repeatKey] || 0) + 1;
-
-      const rating = Number(r['CSAT'] || r['CSAT Rating']);
-
-      if(!isNaN(rating) && rating>0){
-
-        surveys++;
-
-        if(rating>=4){
-          csat++;
-          taskMap[task].csat++;
-        }else{
-          dsat++;
-          taskMap[task].dsat++;
-        }
-      }
-
-    });
-
-    Object.entries(repeatMap).forEach(([key,c])=>{
-
-      if(c > 1){
-
-        repeat += (c - 1);
-
-        const task = key.split('__')[0];
-
-        if(taskMap[task]){
-          taskMap[task].repeat += (c - 1);
-        }
-
-      }
-
-    });
-
-    const actualBotHandled = Math.max(0, botHandled-repeat);
-
-    const actualPct = totalDemand
-      ? ((actualBotHandled/totalDemand)*100).toFixed(1)
-      : 0;
-
-    const matchPct = aiRows.length
-      ? ((matched/aiRows.length)*100).toFixed(1)
-      : 0;
-
-    const csatPct = surveys
-      ? ((csat/surveys)*100).toFixed(1)
-      : 0;
-
-    document.getElementById('ai-kpis').innerHTML = `
-      <div class="kpi blue"><div class="lbl">TOTAL DEMAND</div><div class="val">${totalDemand}</div><div class="sub">Ticket All universe</div></div>
-      <div class="kpi"><div class="lbl">AI TOUCHES</div><div class="val">${aiRows.length}</div><div class="sub">Resolved by AI</div></div>
-      <div class="kpi amber"><div class="lbl">MATCH CONFIDENCE</div><div class="val">${matchPct}%</div><div class="sub">${matched} matched phones</div></div>
-      <div class="kpi green"><div class="lbl">BOT HANDLED</div><div class="val">${botHandled}</div><div class="sub">Not found in Agent Activity</div></div>
-      <div class="kpi red"><div class="lbl">REPEAT</div><div class="val">${repeat}</div><div class="sub">Repeat AI journeys</div></div>
-      <div class="kpi purple"><div class="lbl">ACTUAL BOT HANDLED %</div><div class="val">${actualPct}%</div><div class="sub">Operational estimate</div></div>
-    `;
-
-    document.getElementById('ai-status-body').innerHTML =
-      Object.entries(statusMap)
-      .sort((a,b)=>b[1]-a[1])
-      .map(([s,c])=>`
-        <tr>
-          <td>${s}</td>
-          <td>${c}</td>
-          <td>${((c/totalDemand)*100).toFixed(1)}%</td>
-        </tr>
-      `).join('');
-
-    
-    // ── DAILY BOT EFFICIENCY + OPERATIONAL RELIEF ─────────────────────
-
-    const dailyAI = {};
-    const dailyDemand = {};
-
-    // Total demand by day
-    ticketRows.forEach(r=>{
-
-      const rawDate =
-        r['Created At'] ||
-        r['CreatedAt'] ||
-        r['Date'] ||
-        r['created_at'];
-
-      const dt = parseDT(rawDate);
-
-      if(!dt)return;
-
-      const day = dt.toLocaleDateString(
-        'en-US',
-        {month:'short',day:'numeric'}
-      );
-
-      dailyDemand[day] = (dailyDemand[day] || 0) + 1;
-    });
-
-    // AI journey tracking
-    aiRows.forEach(r=>{
-
-      const rawDate =
-        r['Created At'] ||
-        r['CreatedAt'] ||
-        r['Date'] ||
-        r['created_at'];
-
-      const dt = parseDT(rawDate);
-
-      if(!dt)return;
-
-      const day = dt.toLocaleDateString(
-        'en-US',
-        {month:'short',day:'numeric'}
-      );
-
-      const phone = cleanPhone(
-        r['Customer Phone'] ||
-        r['Phone']
-      );
-
-      if(!phone)return;
-
-      if(!dailyAI[day]){
-        dailyAI[day]={
-          ai:new Set(),
-          contained:new Set()
-        };
-      }
-
-      dailyAI[day].ai.add(phone);
-
-      if(!agentPhones.has(phone)){
-        dailyAI[day].contained.add(phone);
-      }
-
-    });
-
-    // Render efficiency table
-    document.getElementById('ai-efficiency-body').innerHTML =
-      Object.entries(dailyAI)
-      .map(([day,v])=>{
-
-        const aiCount = v.ai.size;
-        const contained = v.contained.size;
-
-        const eff = aiCount
-          ? ((contained/aiCount)*100).toFixed(1)
-          : '0';
-
-        return `
-          <tr>
-            <td><strong>${day}</strong></td>
-            <td>${aiCount}</td>
-            <td style="color:#16a34a;font-weight:700">${contained}</td>
-            <td>${eff}%</td>
-          </tr>
-        `;
-      }).join('');
-
-    // Render operational relief table
-    document.getElementById('ai-relief-body').innerHTML =
-      Object.entries(dailyAI)
-      .map(([day,v])=>{
-
-        const contained = v.contained.size;
-        const demand = dailyDemand[day] || 0;
-
-        const relief = demand
-          ? ((contained/demand)*100).toFixed(2)
-          : '0';
-
-        return `
-          <tr>
-            <td><strong>${day}</strong></td>
-            <td>${demand}</td>
-            <td style="color:#16a34a;font-weight:700">${contained}</td>
-            <td>${relief}%</td>
-          </tr>
-        `;
-      }).join('');
-
-
-document.getElementById('ai-survey-body').innerHTML = `
-      <tr><td>Total Surveys</td><td>${surveys}</td></tr>
-      <tr><td>CSAT</td><td>${csat}</td></tr>
-      <tr><td>DSAT</td><td>${dsat}</td></tr>
-      <tr><td>CSAT %</td><td>${csatPct}%</td></tr>
-    `;
-
-    document.getElementById('ai-task-body').innerHTML =
-      Object.entries(taskMap)
-      .sort((a,b)=>b[1].ai-a[1].ai)
-      .slice(0,10)
-      .map(([task,v])=>`
-        <tr>
-          <td>${task}</td>
-          <td>${v.ai}</td>
-          <td>${v.esc}</td>
-          <td>${v.repeat}</td>
-          <td>${v.csat}</td>
-          <td>${v.dsat}</td>
-          <td>${v.esc/v.ai < 0.2 ? 'AI Friendly' : (v.esc/v.ai < 0.5 ? 'Moderate' : 'Human Required')}</td>
-        </tr>
-      `).join('');
-  }
-
-
-  // ── COHORT RETENTION ANALYSIS ─────────────────────────────────────────────
-  if(name==='aibot' && tktRows && tktRows.length){
-    const ticketRows = tktRows;
-
-    function cleanPh(v){if(!v)return'';let s=String(v).replace(/[^0-9]/g,'');if(s.length>10)s=s.slice(-10);return s;}
-
-    // Build per-customer per-day journey from Tickets All
-    // Key = phone + disposition, value = array of dates contacted
-    const journeyMap = {};
-    const daySet = new Set();
-
-    ticketRows.forEach(r=>{
-      const phone = cleanPh(r['Customer Phone']||r['Phone']||'');
-      const disp = String(r['Task Names']||r['Task Name']||r['Disposition: L2 Disposition']||'').trim();
-      const status = String(r['Status']||'').toLowerCase();
-      const dateStr = r['Created At']||r['Date']||'';
-      if(!phone||!disp||!dateStr) return;
-
-      let dt;
-      try{dt=new Date(dateStr);}catch(e){return;}
-      if(!dt||isNaN(dt))return;
-
-      const dayKey = dt.toISOString().slice(0,10);
-      daySet.add(dayKey);
-
-      const jKey = phone+'|||'+disp;
-      if(!journeyMap[jKey]){journeyMap[jKey]={phone,disp,days:{},finalStatus:null,finalAgent:null};}
-      if(!journeyMap[jKey].days[dayKey]){
-        journeyMap[jKey].days[dayKey]={status:status,isBot:status.includes('resolved by ai')};
-      }
-    });
-
-    const sortedDays = [...daySet].sort();
-    const numDays = sortedDays.length;
-
-    // Build cohort — customers bot closed on each day
-    // cohort[dayKey] = array of jKeys that were bot-closed that day
-    const cohort = {};
-    sortedDays.forEach(d=>{cohort[d]=[];});
-
-    Object.entries(journeyMap).forEach(([jKey,j])=>{
-      // Find first day this customer+disp appeared
-      const firstDay = Object.keys(j.days).sort()[0];
-      if(!firstDay)return;
-      const firstStatus = j.days[firstDay];
-      if(firstStatus && firstStatus.isBot){
-        cohort[firstDay].push(jKey);
-      }
-    });
-
-    // For each cohort day — how many returned on subsequent days
-    const cohortData = sortedDays.map((startDay,di)=>{
-      const cohortKeys = cohort[startDay]||[];
-      const dayN = {};
-      sortedDays.forEach((d,i)=>{
-        if(i<=di)return; // skip same day and before
-        const returned = cohortKeys.filter(k=>{
-          const j=journeyMap[k];
-          return j.days[d]!==undefined;
-        });
-        const retBotClosed = returned.filter(k=>journeyMap[k].days[d]&&journeyMap[k].days[d].isBot).length;
-        const retAgentClosed = returned.filter(k=>journeyMap[k].days[d]&&!journeyMap[k].days[d].isBot).length;
-        dayN[i-di] = {count:returned.length,bot:retBotClosed,agent:retAgentClosed};
-      });
-      // Top return disposition
-      const dispCount={};
-      cohortKeys.forEach(k=>{
-        Object.keys(journeyMap[k].days).filter(d=>d>startDay).forEach(()=>{
-          const d=journeyMap[k].disp;
-          dispCount[d]=(dispCount[d]||0)+1;
-        });
-      });
-      const topDisp = Object.entries(dispCount).sort((a,b)=>b[1]-a[1])[0];
-      return{day:startDay,cohortSize:cohortKeys.length,returns:dayN,topDisp:topDisp?topDisp[0]:'-'};
-    });
-
-    // Total weekly numbers for True Bot Close %
-    const totalWeekly = ticketRows.length;
-    const totalDay1BotClosed = cohortData.reduce((a,b)=>a+b.cohortSize,0);
-    const totalReturned = cohortData.reduce((a,c)=>{
-      return a+Object.values(c.returns).reduce((x,y)=>x+y.count,0);
-    },0);
-    const trueBotClosed = Math.max(0,totalDay1BotClosed-totalReturned);
-    const trueBotPct = totalWeekly?(trueBotClosed/totalWeekly*100).toFixed(1):0;
-
-    const cohortWarn=document.getElementById('cohort-warn');
-    const cohortWrap=document.getElementById('cohort-wrap');
-    if(numDays<2){cohortWarn.style.display='block';cohortWrap.style.display='none';}
-    else{
-      cohortWarn.style.display='none';cohortWrap.style.display='block';
-
-      // KPIs
-      document.getElementById('kpi-cohort').innerHTML=[
-        {l:'Total Day 1 Bot Closed',v:totalDay1BotClosed,s:'across all days',c:'purple'},
-        {l:'Came Back (same issue)',v:totalReturned,s:(totalDay1BotClosed?(totalReturned/totalDay1BotClosed*100).toFixed(1)+'% return rate':''),c:'red'},
-        {l:'True Bot Closed',v:trueBotClosed,s:'never came back',c:'green'},
-        {l:'True Bot Close %',v:trueBotPct+'%',s:'of total weekly demand',c:parseFloat(trueBotPct)>=20?'green':'amber'},
-      ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
-
-      // Cohort table header — Day+1, Day+2 etc
-      const maxReturn = Math.min(numDays-1, 6);
-      document.getElementById('cohort-thead').innerHTML=`<tr>
-        <th>Cohort Day</th>
-        <th>Bot Closed (N)</th>
-        ${Array.from({length:maxReturn},(_,i)=>`<th>Day +${i+1}</th>`).join('')}
-        <th>Never Returned</th>
-        <th>True Close %</th>
-      </tr>`;
-
-      // Cohort table body
-      document.getElementById('cohort-tbody').innerHTML=cohortData.filter(c=>c.cohortSize>0).map(c=>{
-        const totalRet=Object.values(c.returns).reduce((a,b)=>a+b.count,0);
-        const neverRet=Math.max(0,c.cohortSize-totalRet);
-        const truePct=c.cohortSize?(neverRet/c.cohortSize*100).toFixed(0):0;
-        const dayLabel=new Date(c.day).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-        const retCells=Array.from({length:maxReturn},(_,i)=>{
-          const rd=c.returns[i+1];
-          if(!rd||rd.count===0)return`<td style="color:#e2e8f0;text-align:center">—</td>`;
-          const pct=c.cohortSize?(rd.count/c.cohortSize*100).toFixed(0):0;
-          const bg=pct>30?'#fee2e2':pct>15?'#fef3c7':'#dcfce7';
-          const col=pct>30?'#b91c1c':pct>15?'#b45309':'#15803d';
-          return`<td style="text-align:center;background:${bg};color:${col};font-weight:700">${rd.count}<br><span style="font-size:9px">${pct}%</span><br><span style="font-size:9px;color:#64748b">B:${rd.bot} A:${rd.agent}</span></td>`;
-        }).join('');
-        return`<tr>
-          <td><strong>${dayLabel}</strong></td>
-          <td style="font-weight:700;color:#7c3aed">${c.cohortSize}</td>
-          ${retCells}
-          <td style="font-weight:700;color:#16a34a;text-align:center">${neverRet}</td>
-          <td style="text-align:center"><span class="badge ${truePct>=70?'bg':truePct>=50?'ba':'br'}">${truePct}%</span></td>
-        </tr>`;
-      }).join('');
-
-      // Daily breakdown table
-      document.getElementById('cohort-daily-tbody').innerHTML=cohortData.filter(c=>c.cohortSize>0).map((c,di)=>{
-        const totalRet=Object.values(c.returns).reduce((a,b)=>a+b.count,0);
-        const retPct=c.cohortSize?(totalRet/c.cohortSize*100).toFixed(1):0;
-        // How many from previous cohorts returned on THIS day
-        let returnedToday=0,botReClosed=0,agentClosed2=0;
-        cohortData.forEach((prev,pi)=>{
-          if(pi>=di)return;
-          const r=prev.returns[di-pi];
-          if(r){returnedToday+=r.count;botReClosed+=r.bot;agentClosed2+=r.agent;}
-        });
-        const dayLabel=new Date(c.day).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-        return`<tr>
-          <td><strong>${dayLabel}</strong></td>
-          <td style="color:#7c3aed;font-weight:700">${c.cohortSize}</td>
-          <td style="color:#dc2626;font-weight:700">${returnedToday}</td>
-          <td><span class="badge ${parseFloat(retPct)<10?'bg':parseFloat(retPct)<25?'ba':'br'}">${retPct}%</span></td>
-          <td style="font-size:11px;color:#64748b;max-width:120px">${c.topDisp}</td>
-          <td style="color:#7c3aed">${botReClosed}</td>
-          <td style="color:#3b82f6">${agentClosed2}</td>
-        </tr>`;
-      }).join('');
-    }
-  }
-
-  if(name==='orders'){
-    const od=Object.entries(orderFreq).sort((a,b)=>b[1]-a[1]);
-    document.getElementById('kpi-orders').innerHTML=[
-      {l:'Total Orders',v:Object.keys(orderFreq).length,c:''},
-      {l:'Multi-contact',v:od.filter(([,c])=>c>1).length,c:'amber'},
-      {l:'4+ Contacts',v:od.filter(([,c])=>c>=4).length,c:'red'},
-      {l:'Chats w/ Order',v:wa.filter(r=>r.order&&r.order!=='-'&&r.order!=='nan').length,c:'blue'},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div></div>`).join('');
-    document.getElementById('order-tbody').innerHTML=od.slice(0,15).map(([o,c])=>{const rows=wa.filter(r=>r.order===o);const agents=[...new Set(rows.map(r=>r.agent.split(' ')[0]))].join(', ');const t=rows.map(r=>r.resMin).filter(v=>v!==null&&v>0);const ls=rows[rows.length-1]?.status||'-';return`<tr><td><strong>${o}</strong></td><td><span class="badge ${c>=4?'br':c>=2?'ba':'bg'}">${c}</span></td><td style="font-size:10px;color:#64748b">${agents}</td><td>${t.length?fmt(avg(t)):'-'}</td><td><span class="badge ${ls==='completed'?'bg':'ba'}">${ls}</span></td></tr>`;}).join('');
-    document.getElementById('order-hot-tbody').innerHTML=od.filter(([,c])=>c>=4).slice(0,15).map(([o,c])=>{const rows=wa.filter(r=>r.order===o);return`<tr><td><strong style="color:#dc2626">${o}</strong></td><td><span class="badge br">${c}</span></td><td>${(rows[rows.length-1]?.agent||'-').split(' ')[0]}</td><td style="font-size:10px;color:#64748b">Likely unresolved</td></tr>`;}).join('');
-  }
-
-  if(name==='transfers'){
-    const tr2=wa.filter(r=>r.status==='transferred');
-    document.getElementById('kpi-transfers').innerHTML=[
-      {l:'Total Transfers',v:tr2.length,c:'amber'},
-      {l:'Transfer Rate',v:(total?tr2.length/total*100:0).toFixed(1)+'%',c:tr2.length/total>.1?'red':'amber'},
-      {l:'Agents',v:AGENTS.length,c:''},
-      {l:'Total Chats',v:total,c:''},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div></div>`).join('');
-    document.getElementById('transfer-tbody').innerHTML=AGENTS.map(a=>{const rows=wa.filter(r=>r.agent===a);const tr3=rows.filter(r=>r.status==='transferred').length;const p2=rows.length?tr3/rows.length*100:0;return`<tr><td><span class="dot" style="background:${agC(a)}"></span>${a}</td><td>${rows.length}</td><td>${tr3}</td><td><strong>${p2.toFixed(1)}%</strong></td><td><span class="badge ${p2>10?'br':p2>5?'ba':'bg'}">${p2>10?'High':p2>5?'Mid':'Low'}</span></td></tr>`;}).join('');
-    document.getElementById('transfer-detail-tbody').innerHTML=wa.filter(r=>r.handoffReason&&r.handoffReason!=='-'&&r.handoffReason!=='').slice(0,20).map(r=>`<tr><td>${r.ticketId}</td><td>${r.agent.split(' ')[0]}</td><td style="font-size:10px;color:#64748b">${r.handoffReason}</td></tr>`).join('')||'<tr><td colspan="3" style="color:#94a3b8">No transfer details</td></tr>';
-  }
-
-  if(name==='csat'){
-    const csatRows=wa.filter(r=>r.csat!==null);
-    document.getElementById('csat-warn').style.display=csatRows.length?'none':'block';
-    if(!csatRows.length){document.getElementById('kpi-csat').innerHTML='';return;}
-    const csatGood=csatRows.filter(r=>r.csat>=4).length,csatBad=csatRows.filter(r=>r.csat<=3).length;
-    const avgScore=avg(csatRows.map(r=>r.csat));
-    document.getElementById('kpi-csat').innerHTML=[
-      {l:'CSAT Rated',v:csatRows.length,s:'of '+total,c:''},
-      {l:'CSAT (4-5)',v:csatGood,s:(csatRows.length?csatGood/csatRows.length*100:0).toFixed(1)+'%',c:'green'},
-      {l:'DSAT (1-3)',v:csatBad,s:(csatRows.length?csatBad/csatRows.length*100:0).toFixed(1)+'%',c:'red'},
-      {l:'Avg Score',v:fmt(avgScore)+'/5',c:avgScore>=4?'green':avgScore>=3?'amber':'red'},
-      {l:'5 Star',v:csatRows.filter(r=>r.csat===5).length,c:'green'},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
-    // Only show ratings 4,5 as CSAT and 1,2,3 as DSAT — no duplicate combined view
-    destroyC('c-ratings');CH['c-ratings']=new Chart(document.getElementById('c-ratings'),{type:'bar',data:{labels:['5 Star','4 Star','3 Star','2 Star','1 Star'],datasets:[{data:[5,4,3,2,1].map(r=>csatRows.filter(c=>c.csat===r).length),backgroundColor:['#16a34a','#4ade80','#ca8a04','#f97316','#dc2626'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
-    const agCSAT=AGENTS.map(a=>{const rows=wa.filter(r=>r.agent===a&&r.csat!==null);return{a:a.split(' ')[0],good:rows.filter(r=>r.csat>=4).length,bad:rows.filter(r=>r.csat<=3).length};});
-    destroyC('c-csat-agent');CH['c-csat-agent']=new Chart(document.getElementById('c-csat-agent'),{type:'bar',data:{labels:agCSAT.map(r=>r.a),datasets:[{label:'CSAT (4-5)',data:agCSAT.map(r=>r.good),backgroundColor:'#16a34a',borderRadius:4,stack:'s'},{label:'DSAT (1-3)',data:agCSAT.map(r=>r.bad),backgroundColor:'#dc2626',borderRadius:4,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:11}},stacked:true},y:{ticks:{font:{size:11}},beginAtZero:true,stacked:true}}}});
-    document.getElementById('csat-agent-tbody').innerHTML=AGENTS.map(a=>{
-      const ar=wa.filter(r=>r.agent===a&&r.csat!==null);if(!ar.length)return`<tr><td><span class="dot" style="background:${agC(a)}"></span>${a}</td><td colspan="8" style="color:#ccc">No CSAT data</td></tr>`;
-      const good=ar.filter(r=>r.csat>=4).length,bad=ar.filter(r=>r.csat<=3).length,avgS=avg(ar.map(r=>r.csat));
-      const five=ar.filter(r=>r.csat===5).length;
-      const cP=ar.length?good/ar.length*100:0,dP=ar.length?bad/ar.length*100:0;
-      return`<tr><td><span class="dot" style="background:${agC(a)}"></span><strong>${a}</strong></td><td>${ar.length}</td><td style="color:#16a34a;font-weight:700">${good}</td><td><span class="badge bg">${cP.toFixed(1)}%</span></td><td style="color:#dc2626;font-weight:700">${bad}</td><td><span class="badge ${dP>30?'br':dP>15?'ba':'bg'}">${dP.toFixed(1)}%</span></td><td style="font-weight:700;color:${avgS>=4?'#16a34a':avgS>=3?'#d97706':'#dc2626'}">${fmt(avgS)}</td><td>${five}</td><td><span class="badge ${avgS>=4.5?'bg':avgS>=4?'bg':avgS>=3?'ba':'br'}">${avgS>=4?'Good':avgS>=3?'Average':'Poor'}</span></td></tr>`;
-    }).join('');
-
-    // ── 7-DAY CSAT TREND ─────────────────────────────────────────────────────
-    try{
-    // Use CSAT Submitted At from tktRows for accurate date
-    const csatByDay={};
-    if(tktRows){
-      tktRows.forEach(r=>{
-        const rating=parseFloat(r['CSAT Rating']);
-        if(!rating||isNaN(rating)||rating<1||rating>5) return;
-        const dateStr=r['CSAT Submitted At']||r['Created At']||'';
-        if(!dateStr) return;
-        let d=null;
-        try{d=new Date(dateStr);}catch(e){return;}
-        if(!d||isNaN(d)) return;
-        const key=d.toISOString().slice(0,10); // YYYY-MM-DD
-        if(!csatByDay[key])csatByDay[key]={good:0,bad:0,total:0};
-        csatByDay[key].total++;
-        if(rating>=4)csatByDay[key].good++;
-        else csatByDay[key].bad++;
-      });
-    }
-    // Also pull from wa rows as fallback
-    if(!Object.keys(csatByDay).length){
-      wa.filter(r=>r.csat!==null).forEach(r=>{
-        const d=r.startDT;if(!d)return;
-        const key=d.toISOString().slice(0,10);
-        if(!csatByDay[key])csatByDay[key]={good:0,bad:0,total:0};
-        csatByDay[key].total++;
-        if(r.csat>=4)csatByDay[key].good++;
-        else csatByDay[key].bad++;
-      });
-    }
-    const cdays=Object.keys(csatByDay).sort();
-    const c7warn=document.getElementById('csat-7day-warn');
-    const c7wrap=document.getElementById('csat-7day-wrap');
-    if(cdays.length<2){c7warn.style.display='block';c7wrap.style.display='none';}
-    else{
-      c7warn.style.display='none';c7wrap.style.display='block';
-      destroyC('c-csat-7day');
-      const _el7day=document.getElementById('c-csat-7day');
-      if(!_el7day){return;}
-      CH['c-csat-7day']=new Chart(_el7day,{
-        type:'line',
-        data:{
-          labels:cdays.map(d=>{const dt=new Date(d);return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});}),
-          datasets:[
-            {label:'CSAT (4-5)',data:cdays.map(d=>csatByDay[d].good),borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,.1)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#16a34a'},
-            {label:'DSAT (1-3)',data:cdays.map(d=>csatByDay[d].bad),borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.1)',fill:true,tension:.3,pointRadius:5,pointBackgroundColor:'#dc2626'},
-            {label:'CSAT %',data:cdays.map(d=>csatByDay[d].total?(csatByDay[d].good/csatByDay[d].total*100).toFixed(1):0),borderColor:'#3b82f6',backgroundColor:'transparent',tension:.3,pointRadius:3,borderDash:[5,5],yAxisID:'y1'}
-          ]
-        },
-        options:{
-          responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},
-          scales:{
-            x:{ticks:{font:{size:10}}},
-            y:{ticks:{font:{size:11}},beginAtZero:true,title:{display:true,text:'Count',font:{size:10}}},
-            y1:{ticks:{font:{size:10},callback:v=>v+'%'},beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'CSAT %',font:{size:10}}}
-          }
-        }
-      });
-    }
-
-    // ── AGENT DAILY CSAT BREAKDOWN ─────────────────────────────────────────
-    const agentByDay={};
-    wa.filter(r=>r.csat!==null&&r.startDT).forEach(r=>{
-      const key=r.startDT.toISOString().slice(0,10);
-      if(!agentByDay[r.agent])agentByDay[r.agent]={};
-      if(!agentByDay[r.agent][key])agentByDay[r.agent][key]={good:0,bad:0};
-      if(r.csat>=4)agentByDay[r.agent][key].good++;
-      else agentByDay[r.agent][key].bad++;
-    });
-    const agDays=[...new Set(wa.filter(r=>r.csat!==null&&r.startDT).map(r=>r.startDT.toISOString().slice(0,10)))].sort();
-    const a7warn=document.getElementById('agent-7day-warn');
-    const a7wrap=document.getElementById('agent-7day-wrap');
-    if(agDays.length<2){a7warn.style.display='block';a7wrap.style.display='none';}
-    else{
-      a7warn.style.display='none';a7wrap.style.display='block';
-      destroyC('c-agent-7day');
-      const _elAg7=document.getElementById('c-agent-7day');
-      if(!_elAg7){return;}
-      CH['c-agent-7day']=new Chart(_elAg7,{
-        type:'bar',
-        data:{
-          labels:agDays.map(d=>{const dt=new Date(d);return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});}),
-          datasets:AGENTS.map(a=>({
-            label:a.split(' ')[0],
-            data:agDays.map(d=>(agentByDay[a]&&agentByDay[a][d])?agentByDay[a][d].good:0),
-            backgroundColor:agC(a),borderRadius:3,stack:'s'
-          }))
-        },
-        options:{
-          responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:6}}},
-          scales:{x:{ticks:{font:{size:10}},stacked:true},y:{ticks:{font:{size:11}},beginAtZero:true,stacked:true}}
-        }
-      });
-    }
-
-    }catch(e){console.warn('7-day chart error:',e);}
-    document.getElementById('dsat-tbody').innerHTML=wa.filter(r=>r.csat!==null&&r.csat<=3).sort((a,b)=>a.csat-b.csat).slice(0,50).map(r=>`<tr><td>${r.ticketId}</td><td>${r.agent}</td><td>${r.customer||'-'}</td><td><span class="badge ${r.csat<=2?'br':'ba'}">${r.csat} Star</span></td><td style="font-size:10px;color:#64748b">-</td><td style="font-size:10px;color:#64748b">${r.disposition||'-'}</td><td style="font-size:10px;color:#64748b">${r.product||'-'}</td></tr>`).join('');
-  }
-
-  if(name==='roster'){
-    const dowNames={0:'Sunday',1:'Monday',2:'Tuesday',3:'Wednesday',4:'Thursday',5:'Friday',6:'Saturday'};
-    const dayV={};wa.forEach(r=>{if(r.dow!==null){const d=dowNames[r.dow];dayV[d]=(dayV[d]||0)+1;}});
-    const sd=Object.entries(dayV).sort((a,b)=>a[1]-b[1]);
-    const lightDay=sd.length?sd[0][0]:'Sunday';
-    const lightDow=Object.entries(dowNames).find(([,v])=>v===lightDay)?.[0]||0;
-    const peakH=hours[vols.indexOf(Math.max(...vols))];
-    const peakVol=Math.max(...vols);
-    const agentsNeeded=Math.ceil(peakVol/12.75);
-    document.getElementById('kpi-roster').innerHTML=[
-      {l:'Peak Hour',v:String(peakH).padStart(2,'0')+':00',s:peakVol+' chats',c:'red'},
-      {l:'Agents at Peak',v:agentsNeeded,s:'recommended min',c:agentsNeeded>AGENTS.length?'red':'blue'},
-      {l:'Lightest Day',v:lightDay,s:'best for week off',c:'green'},
-      {l:'Active Agents',v:AGENTS.length,s:AGENTS.map(a=>a.split(' ')[0]).join(', '),c:'purple'},
-    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s}</div></div>`).join('');
-
-    const scores2=AGENTS.map(a=>({a,...calcScore(a,wa,teamMed,teamFR,hasCsat)})).sort((a,b)=>b.score-a.score);
-    document.getElementById('weekoff-section').innerHTML=`
-      <div class="info" style="margin-bottom:10px">Lightest day: <strong>${lightDay}</strong>${sd.length?` (${sd[0][1]} chats avg)`:''} — top performers earn this off.</div>
-      <table><thead><tr><th>Rank</th><th>Agent</th><th>Type</th><th>Score</th><th>Day Off</th><th>Reason</th></tr></thead><tbody>
-      ${scores2.map((s,i)=>{
-        const isnew2=isNew(s.a);
-        const offDay=i<3?lightDay:['Saturday','Friday','Thursday'][i-3]||lightDay;
-        const reason=i===0?'Top performer — earns lightest day':i===1?'2nd — lightest day':i===2?'3rd — lightest day':isnew2?'New — rotate for training balance':'Senior — fair rotation';
-        return`<tr><td>${i===0?'&#127942;':i===1?'&#129352;':i===2?'&#129353;':i+1}</td><td><span class="dot" style="background:${agC(s.a)}"></span><strong>${s.a}</strong></td><td><span class="badge ${isnew2?'ba':'bb'}">${isnew2?'New':'Senior'}</span></td><td><strong style="color:${s.score>=75?'#16a34a':s.score>=55?'#ca8a04':'#dc2626'}">${s.score}</strong></td><td><span class="badge bg">${offDay}</span></td><td style="font-size:10px;color:#64748b">${reason}</td></tr>`;
-      }).join('')}</tbody></table>`;
-
-    const shiftAssign={};
-    AGENTS.forEach(a=>{let best=SHIFT_TIMES[0],bestL=0;SHIFT_TIMES.forEach(sh=>{const l=wa.filter(r=>r.agent===a&&r.hour>=sh.start&&r.hour<sh.start+4).length;if(l>bestL){bestL=l;best=sh;}});shiftAssign[a]=best;});
-    const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    document.getElementById('roster-grid-wrap').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:11px">
-      <thead><tr style="background:#f8fafc">${['Agent',...days].map((d,i)=>{
-        const dow=i===0?-1:i===7?0:i;
-        const isLight=String(dow)===String(lightDow);
-        return`<th style="padding:9px 8px;text-align:${i===0?'left':'center'};border-bottom:2px solid #e5e7eb;font-size:10px;color:${isLight?'#16a34a':'#64748b'};text-transform:uppercase">${d}${isLight?' &#127774;':''}</th>`;
-      }).join('')}</tr></thead><tbody>
-      ${scores2.map((s,rank)=>{
-        const sh=shiftAssign[s.a]||SHIFT_TIMES[0];
-        const isnew2=isNew(s.a);
-        const offDow=rank<3?parseInt(lightDow):(rank<5?(parseInt(lightDow)+1)%7:(parseInt(lightDow)+2)%7);
-        return`<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:9px 10px"><span class="dot" style="background:${agC(s.a)}"></span><strong>${s.a}</strong> <span class="badge ${isnew2?'ba':'bb'}" style="font-size:8px">${isnew2?'New':'Sr'}</span></td>
-          ${days.map((_,di)=>{const dow=di===6?0:di+1;const isOff=dow===offDow;return`<td style="padding:7px 5px;text-align:center;background:${isOff?'#f9fafb':''}"><span style="padding:2px 7px;border-radius:4px;font-weight:700;font-size:10px;${isOff?'background:#f1f5f9;color:#94a3b8':sh.cls}">${isOff?'OFF':sh.label}</span></td>`;}).join('')}
-        </tr>`;
-      }).join('')}</tbody></table>`;
-
-    const covThead=document.getElementById('cov-thead');
-    const covTbody=document.getElementById('cov-tbody');
-    covThead.innerHTML=`<th>Shift</th>${days.map(d=>`<th style="text-align:center">${d}</th>`).join('')}`;
-    const shiftGroups=[...new Set(Object.values(shiftAssign).map(s=>s.label))];
-    covTbody.innerHTML=[...shiftGroups,'Total'].map(sh=>`<tr><td><strong>${sh==='Total'?'Total':sh+':00'}</strong></td>${days.map((_,di)=>{const dow=di===6?0:di+1;let cnt=0;scores2.forEach((s,rank)=>{const offDow=rank<3?parseInt(lightDow):(rank<5?(parseInt(lightDow)+1)%7:(parseInt(lightDow)+2)%7);if(dow!==offDow){const agSh=shiftAssign[s.a]||SHIFT_TIMES[0];if(sh==='Total'||agSh.label===sh)cnt++;}});const need=sh==='Total'?7:2;return`<td style="text-align:center;font-weight:700;color:${cnt>=need?'#16a34a':cnt===need-1?'#d97706':'#dc2626'}">${cnt}</td>`;}).join('')}</tr>`).join('');
-
-    document.getElementById('peak-check').innerHTML=hours.filter(h=>vols[h-8]>0).sort((a,b)=>vols[b-8]-vols[a-8]).slice(0,5).map(h=>{const vol=vols[h-8],need=Math.ceil(vol/12.75),have=AGENTS.filter(a=>{const sh=shiftAssign[a]||SHIFT_TIMES[0];return h>=sh.start&&h<sh.end;}).length;const ok=have>=need;return`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-weight:700;min-width:48px;font-size:12px">${String(h).padStart(2,'0')}:00</span><div style="background:#f1f5f9;border-radius:3px;height:7px;flex:1;overflow:hidden"><div style="height:100%;border-radius:3px;background:${ok?'#3b82f6':'#dc2626'};width:${vol/Math.max(1,...hours.map(hh=>vols[hh-8]))*100}%"></div></div><span style="font-weight:700;font-size:12px;min-width:22px">${vol}</span><span style="font-size:11px;min-width:110px;color:${ok?'#16a34a':'#dc2626'}">${need} need / ${have} on shift</span><span class="badge ${ok?'bg':'br'}">${ok?'OK':'Under'}</span></div>`;}).join('');
-
-    destroyC('c-heatmap');CH['c-heatmap']=new Chart(document.getElementById('c-heatmap'),{type:'bar',data:{labels:hours.map(h=>h+':00'),datasets:AGENTS.map(a=>({label:a.split(' ')[0],data:hours.map(h=>wa.filter(r=>r.hour===h&&r.agent===a).length),backgroundColor:agC(a),borderRadius:2,stack:'s'}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:6}}},scales:{x:{ticks:{font:{size:10},autoSkip:false},stacked:true},y:{ticks:{font:{size:11}},beginAtZero:true,stacked:true}}}});
-  }
-}
-
-// ─── REPEAT CHART FILTER ─────────────────────────────────────────────────────
-function filterRepeatChart(){
-  const sel=document.getElementById('repeat-disp-filter');
-  renderRepeatDailyChart(sel?sel.value:'all');
-}
-
-function renderRepeatDailyChart(dispFilter){
-  const dailyStats=window._repeatDailyStats||{};
-  const orderedDays=window._orderedDays||['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
-  // If filtering by disposition — need per-day disposition stats
-  // We rebuild per-day filtered data from wa
-  if(!G)return;
-  const wa=G.wa;
-
-  let incomingData, repeatData, labels;
-
-  if(dispFilter==='all'){
-    labels=orderedDays.filter(d=>dailyStats[d]);
-    incomingData=labels.map(d=>dailyStats[d].incoming);
-    repeatData=labels.map(d=>dailyStats[d].repeat);
-  } else {
-    // Per day filtered by specific disposition
-    const dowNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const filteredStats={};
-    wa.forEach(r=>{
-      if(!r.startDT)return;
-      if(r.disposition!==dispFilter)return;
-      const day=dowNames[r.startDT.getDay()];
-      if(!filteredStats[day])filteredStats[day]={incoming:0,repeat:0};
-      filteredStats[day].incoming++;
-      if(r.dailyRepeat)filteredStats[day].repeat++;
-    });
-    labels=orderedDays.filter(d=>filteredStats[d]);
-    incomingData=labels.map(d=>filteredStats[d].incoming);
-    repeatData=labels.map(d=>filteredStats[d].repeat);
-  }
-
-  destroyC('c-repeat-daily');
-  CH['c-repeat-daily']=new Chart(document.getElementById('c-repeat-daily'),{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'Incoming'+(dispFilter!=='all'?' ('+dispFilter+')':''),data:incomingData,backgroundColor:'#3b82f6',borderRadius:4},
-        {label:'Daily Repeat'+(dispFilter!=='all'?' ('+dispFilter+')':''),data:repeatData,backgroundColor:'#dc2626',borderRadius:4}
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},
-      scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,ticks:{font:{size:11}}}}
-    }
-  });
-}
-
-// ─── FILE UPLOAD ──────────────────────────────────────────────────────────────
+// ─── PROCESS DATA ─────────────────────────────────────────────────────────────
 function readFile(file,cb){
   const reader=new FileReader();
-  reader.onload=ev=>{try{const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true,raw:false});cb(null,XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}));}catch(e){cb(e);}};
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true,raw:false});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      cb(null,XLSX.utils.sheet_to_json(ws,{defval:''}));
+    }catch(e){cb(e);}
+  };
   reader.readAsArrayBuffer(file);
 }
 
-function tryBuild(){
-  if(!aaRows)return;
-  G=buildData(aaRows,tktRows);
-  document.getElementById('no-data').style.display='none';
-  document.getElementById('summary-data').style.display='block';
-  const nd=G.numDays;
-  document.getElementById('rpt-date').textContent=`${G.wa.length} WhatsApp chats | ${nd} day${nd>1?'s':''} | Agents: ${G.AGENTS.join(', ')}${tktRows?' + Tickets All':''}` ;
-  renderAll();
+function buildReport(csRows, salesRows, monthFilter){
+  // Build sales map — clean category_l3 name
+  const salesMap={};
+  const monthsSet=new Set();
+  salesRows.forEach(r=>{
+    const raw = String(r['category_l3']||r['Category']||r['product']||'').trim();
+    if(!raw) return;
+    const items = parseFloat(r['Items']||r['Quantity']||0)||0;
+    const dateStr = String(r['date']||r['Date']||r['Month']||'');
+    let month=0;
+    if(dateStr.includes('-')){
+      try{ month=new Date(dateStr).getMonth()+1; }catch(e){}
+    } else { month=parseInt(dateStr)||0; }
+    if(month) monthsSet.add(month);
+    if(!salesMap[raw]) salesMap[raw]={total:0,months:{}};
+    if(monthFilter==='all'){ salesMap[raw].total+=items; salesMap[raw].months[month]=(salesMap[raw].months[month]||0)+items; }
+    else if(month===parseInt(monthFilter)){ salesMap[raw].total+=items; salesMap[raw].months[month]=(salesMap[raw].months[month]||0)+items; }
+  });
+  const salesNames=Object.keys(salesMap);
+  const totalSales=Object.values(salesMap).reduce((a,b)=>a+b.total,0);
+
+  // Populate month filter
+  const sel=document.getElementById('month-sel');
+  const existingMonths=Array.from(sel.options).map(o=>o.value).filter(v=>v!=='all');
+  if(existingMonths.length===0){
+    const MNAMES={1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'};
+    Array.from(monthsSet).sort().forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m; opt.textContent=MNAMES[m]||'Month '+m;
+      sel.appendChild(opt);
+    });
+  }
+
+  // Process CS
+  let totalCS=0, pqCount=0;
+  const prodMap={};
+  const catTotals={};
+  const monthTotals={};
+  ALL_CATS.forEach(c=>catTotals[c]=0);
+
+  csRows.forEach(r=>{
+    totalCS++;
+    const l2  = String(r['Disposition: L2 Disposition']||r['EB']||r['L2 Disposition']||r['Custom L2 disposition']||'').trim();
+    const prod = String(r['Subcategory']||r['DW']||r['Custom Sub Product Category']||r['Custom Sub Product Category 1']||'').trim();
+    const dateStr = String(r['Created At']||r['date']||r['Date']||r['Months']||'');
+    let month=0;
+    if(dateStr.includes('/')){
+      try{ const p=dateStr.split('/'); month=parseInt(p[1]); }catch(e){}
+    } else if(dateStr.includes('-')){
+      try{ month=new Date(dateStr).getMonth()+1; }catch(e){}
+    } else { month=parseInt(dateStr)||0; }
+
+    if(monthFilter!=='all' && month!==parseInt(monthFilter)) return;
+
+    const mapped=lookupL2(l2);
+    if(!mapped) return;
+    pqCount++;
+
+    const key=prod||'Unknown';
+    if(!prodMap[key]) prodMap[key]={total:0,pq:0,cats:{},fit:0,nonfit:0,months:{}};
+    prodMap[key].total++;
+    prodMap[key].pq++;
+    prodMap[key].months[month]=(prodMap[key].months[month]||0)+1;
+    if(!prodMap[key].cats[mapped.cat]) prodMap[key].cats[mapped.cat]=0;
+    prodMap[key].cats[mapped.cat]++;
+    catTotals[mapped.cat]=(catTotals[mapped.cat]||0)+1;
+    if(FIT_CATS.includes(mapped.cat)) prodMap[key].fit++;
+    else prodMap[key].nonfit++;
+    if(!monthTotals[month]) monthTotals[month]={total:0,fit:0,nonfit:0,cats:{}};
+    monthTotals[month].total++;
+    if(FIT_CATS.includes(mapped.cat)){monthTotals[month].fit++;}
+    else{monthTotals[month].nonfit++;}
+    if(!monthTotals[month].cats[mapped.cat]) monthTotals[month].cats[mapped.cat]=0;
+    monthTotals[month].cats[mapped.cat]++;
+  });
+
+  // Also count total CS tickets per product (not just PQ)
+  csRows.forEach(r=>{
+    if(monthFilter!=='all'){
+      const dateStr=String(r['Created At']||'');
+      let month=0;
+      if(dateStr.includes('/')){ try{const p=dateStr.split('/');month=parseInt(p[1]);}catch(e){} }
+      else if(dateStr.includes('-')){ try{month=new Date(dateStr).getMonth()+1;}catch(e){} }
+      if(month!==parseInt(monthFilter)) return;
+    }
+    const prod=String(r['Subcategory']||r['Custom Sub Product Category']||r['Custom Sub Product Category 1']||'').trim();
+    if(!prod) return;
+    if(!prodMap[prod]) prodMap[prod]={total:0,pq:0,cats:{},fit:0,nonfit:0,months:{}};
+    if(!prodMap[prod]._totalCS) prodMap[prod]._totalCS=0;
+    prodMap[prod]._totalCS++;
+  });
+
+  // Map products to sales and build product data array
+  const productData=[];
+  const mappingResults=[];
+  Object.entries(prodMap).sort((a,b)=>b[1].pq-a[1].pq).forEach(([prod,data])=>{
+    if(!prod||prod==='Unknown'||prod==='spam') return;
+    const match=fuzzyMatch(prod,salesNames);
+    const salesItems=match.name?salesMap[match.name].total:0;
+    mappingResults.push({cs:prod,sales:match.name||'-',type:match.type,score:match.score,tickets:data._totalCS||data.total,pq:data.pq,salesItems});
+    productData.push({
+      product:prod, tickets:data._totalCS||data.total, pq:data.pq,
+      salesItems, salesName:match.name||'-', matchType:match.type,
+      pqRate:salesItems>0?data.pq/salesItems:0,
+      ticketRate:salesItems>0?(data._totalCS||data.total)/salesItems:0,
+      cats:{...data.cats}, fit:data.fit, nonfit:data.nonfit, months:{...data.months}
+    });
+  });
+
+  productData.sort((a,b)=>b.pq-a.pq);
+  return{productData,catTotals,monthTotals,totalCS,pqCount,totalSales,mappingResults,salesMap};
 }
 
-document.getElementById('f-aa').addEventListener('change',function(e){
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function destroyC(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+function fmtP(n,d=2){return isNaN(n)||n===0?'0%':(n*100).toFixed(d)+'%';}
+function pClass(n){return n===0?'pct-zero':n>=0.03?'pct-high':n>=0.01?'pct-mid':'pct-low';}
+
+function renderAll(){
+  renderTab('overview');
+  const activeTab=document.querySelector('.tab.active').textContent.toLowerCase().replace(/\s/g,'');
+  const m={overview:'overview',mainsheet:'mainsheet',finalsheet:'finalsheet','fitvsnon-fit':'fit',categories:'categories',productmapping:'mapping'};
+  renderTab(m[activeTab]||'overview');
+}
+
+function renderTab(n){
+  if(!G) return;
+  const{productData,catTotals,monthTotals,totalCS,pqCount,totalSales,mappingResults}=G;
+
+  if(n==='overview'){
+    const fitT=productData.reduce((a,b)=>a+b.fit,0);
+    const nfitT=productData.reduce((a,b)=>a+b.nonfit,0);
+    const pqRate=totalSales>0?pqCount/totalSales:0;
+    const tktRate=totalSales>0?totalCS/totalSales:0;
+    document.getElementById('kpi-ov').innerHTML=[
+      {l:'Total CS Tickets',v:totalCS.toLocaleString(),s:'all tickets',c:'blue'},
+      {l:'PQ Complaints',v:pqCount.toLocaleString(),s:'product quality related',c:'red'},
+      {l:'PQ Rate',v:fmtP(pqRate),s:'complaints / sales',c:pqRate>0.03?'red':pqRate>0.015?'amber':'green'},
+      {l:'Total Items Sold',v:Math.round(totalSales).toLocaleString(),s:'from sales file',c:'teal'},
+      {l:'FIT Complaints',v:fitT.toLocaleString(),s:pqCount?(fitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'rose'},
+      {l:'Non-FIT Complaints',v:nfitT.toLocaleString(),s:pqCount?(nfitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'purple'},
+      {l:'Ticket Rate',v:fmtP(tktRate),s:'all tickets / sales',c:'amber'},
+      {l:'Products',v:productData.length,s:'with PQ complaints',c:''},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s}</div></div>`).join('');
+
+    const fitT2=productData.reduce((a,b)=>a+b.fit,0);
+    const nfitT2=productData.reduce((a,b)=>a+b.nonfit,0);
+    destroyC('c-fit-pie');
+    CH['c-fit-pie']=new Chart(document.getElementById('c-fit-pie'),{type:'doughnut',data:{labels:['FIT Related','Non-FIT Related'],datasets:[{data:[fitT2,nfitT2],backgroundColor:['#ef4444','#8b5cf6'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}}}});
+
+    const catArr=Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    destroyC('c-cat-bar');
+    CH['c-cat-bar']=new Chart(document.getElementById('c-cat-bar'),{type:'bar',data:{labels:catArr.map(([k])=>k.length>18?k.substring(0,16)+'..':k),datasets:[{data:catArr.map(([,v])=>v),backgroundColor:catArr.map(([k])=>CAT_COLORS[k]||'#94a3b8'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+
+    const months=Object.keys(monthTotals).sort().map(Number);
+    const MNAMES={1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
+    destroyC('c-monthly');
+    CH['c-monthly']=new Chart(document.getElementById('c-monthly'),{type:'line',data:{labels:months.map(m=>MNAMES[m]||'M'+m),datasets:[{label:'PQ Total',data:months.map(m=>monthTotals[m]?.total||0),borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',fill:true,tension:.3,pointRadius:4},{label:'FIT',data:months.map(m=>monthTotals[m]?.fit||0),borderColor:'#f97316',backgroundColor:'transparent',tension:.3,pointRadius:3},{label:'Non-FIT',data:months.map(m=>monthTotals[m]?.nonfit||0),borderColor:'#8b5cf6',backgroundColor:'transparent',tension:.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,padding:6}}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
+
+    const byRate=[...productData].filter(p=>p.salesItems>30).sort((a,b)=>b.pqRate-a.pqRate).slice(0,10);
+    document.getElementById('top-rate').innerHTML=byRate.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:11px;color:#94a3b8;min-width:16px">${i+1}</span><span style="flex:1;font-size:12px;font-weight:500">${p.product}</span><span class="badge br">${fmtP(p.pqRate)}</span></div>`).join('');
+    const byVol=[...productData].sort((a,b)=>b.pq-a.pq).slice(0,10);
+    document.getElementById('top-vol').innerHTML=byVol.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:11px;color:#94a3b8;min-width:16px">${i+1}</span><span style="flex:1;font-size:12px;font-weight:500">${p.product}</span><span class="badge br">${p.pq}</span><span style="font-size:11px;color:#94a3b8">${p.salesItems>0?fmtP(p.pqRate):'-'}</span></div>`).join('');
+  }
+
+  if(n==='mainsheet'){
+    const fitT=productData.reduce((a,b)=>a+b.fit,0),nfitT=productData.reduce((a,b)=>a+b.nonfit,0);
+    const pqRate=totalSales>0?pqCount/totalSales:0,tktRate=totalSales>0?totalCS/totalSales:0;
+    document.getElementById('kpi-main').innerHTML=[
+      {l:'Total Tickets vs Sales',v:fmtP(tktRate),s:totalCS+' / '+Math.round(totalSales).toLocaleString(),c:'blue'},
+      {l:'Product Complaints vs Sales',v:fmtP(pqRate),s:pqCount+' PQ complaints',c:'red'},
+      {l:'FIT Related',v:fitT,s:pqCount?(fitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'rose'},
+      {l:'Non-FIT Related',v:nfitT,s:pqCount?(nfitT/pqCount*100).toFixed(1)+'% of PQ':'',c:'purple'},
+      {l:'Total Sales',v:Math.round(totalSales).toLocaleString(),c:'teal'},
+      {l:'Products',v:productData.length,c:''},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
+    window._mainData=productData;
+    document.getElementById('main-cnt').textContent=productData.length;
+    renderMainTbl(productData);
+  }
+
+  if(n==='finalsheet'){
+    const activeCats=ALL_CATS.filter(c=>catTotals[c]>0);
+    window._finalData=productData; window._finalCats=activeCats;
+    document.getElementById('fin-head').innerHTML=`<tr><th>Product</th><th>PQ</th><th>Sales</th>${activeCats.map(c=>`<th style="font-size:10px;max-width:65px;word-break:break-word">${c}</th>`).join('')}<th>Grand Total %</th></tr>`;
+    renderFinalTbl(productData,activeCats);
+  }
+
+  if(n==='fit'){
+    const fitT=productData.reduce((a,b)=>a+b.fit,0),nfitT=productData.reduce((a,b)=>a+b.nonfit,0);
+    document.getElementById('kpi-fit').innerHTML=[
+      {l:'Total PQ',v:pqCount,c:'red'},
+      {l:'FIT Complaints',v:fitT,s:pqCount?(fitT/pqCount*100).toFixed(1)+'%':'',c:'rose'},
+      {l:'Non-FIT Complaints',v:nfitT,s:pqCount?(nfitT/pqCount*100).toFixed(1)+'%':'',c:'purple'},
+      {l:'Most FIT Issue',v:(()=>{const top=FIT_CATS.map(c=>({c,v:catTotals[c]||0})).sort((a,b)=>b.v-a.v)[0];return top?top.c:'-';})(),s:'highest volume',c:'amber'},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
+    const top20=[...productData].filter(p=>p.pq>0).sort((a,b)=>b.pq-a.pq).slice(0,20);
+    destroyC('c-fit-stack');
+    CH['c-fit-stack']=new Chart(document.getElementById('c-fit-stack'),{type:'bar',data:{labels:top20.map(p=>p.product.length>22?p.product.substring(0,20)+'..':p.product),datasets:[{label:'FIT',data:top20.map(p=>p.fit),backgroundColor:'#ef4444',borderRadius:2,stack:'s'},{label:'Non-FIT',data:top20.map(p=>p.nonfit),backgroundColor:'#8b5cf6',borderRadius:2,stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:10}},stacked:true},y:{ticks:{font:{size:9}},stacked:true}}}});
+    document.getElementById('fit-tbody').innerHTML=top20.map(p=>`<tr><td><strong>${p.product}</strong></td><td>${p.pq}</td><td style="color:#ef4444;font-weight:700">${p.fit}</td><td><span class="badge ${p.pq&&p.fit/p.pq>0.6?'br':'ba'}">${p.pq?(p.fit/p.pq*100).toFixed(0):0}%</span></td><td style="color:#8b5cf6;font-weight:700">${p.nonfit}</td><td><span class="badge bp">${p.pq?(p.nonfit/p.pq*100).toFixed(0):0}%</span></td></tr>`).join('');
+    const top15f=[...productData].filter(p=>FIT_CATS.some(c=>p.cats[c]>0)).sort((a,b)=>b.fit-a.fit).slice(0,15);
+    destroyC('c-fit-sub');
+    CH['c-fit-sub']=new Chart(document.getElementById('c-fit-sub'),{type:'bar',data:{labels:top15f.map(p=>p.product.length>18?p.product.substring(0,16)+'..':p.product),datasets:FIT_CATS.map(c=>({label:c,data:top15f.map(p=>p.cats[c]||0),backgroundColor:CAT_COLORS[c],borderRadius:2,stack:'s'}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:8}}},scales:{x:{ticks:{font:{size:10}},stacked:true},y:{ticks:{font:{size:11}},beginAtZero:true,stacked:true}}}});
+  }
+
+  if(n==='categories'){
+    const activeCatArr=ALL_CATS.map(c=>({c,v:catTotals[c]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+    document.getElementById('kpi-cats').innerHTML=activeCatArr.slice(0,7).map(({c,v})=>`<div class="kpi"><div class="lbl" style="font-size:10px">${c}</div><div class="val" style="font-size:18px;color:${CAT_COLORS[c]}">${v}</div><div class="sub">${pqCount?(v/pqCount*100).toFixed(1)+'% of PQ':''}</div></div>`).join('');
+    destroyC('c-cats');
+    CH['c-cats']=new Chart(document.getElementById('c-cats'),{type:'bar',data:{labels:activeCatArr.map(x=>x.c.length>20?x.c.substring(0,18)+'..':x.c),datasets:[{data:activeCatArr.map(x=>x.v),backgroundColor:activeCatArr.map(x=>CAT_COLORS[x.c]||'#94a3b8'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:10}}}}}});
+    const months=Object.keys(monthTotals).sort().map(Number);
+    const MNAMES={1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'};
+    destroyC('c-cat-trend');
+    CH['c-cat-trend']=new Chart(document.getElementById('c-cat-trend'),{type:'line',data:{labels:months.map(m=>MNAMES[m]||'M'+m),datasets:activeCatArr.slice(0,6).map(({c})=>({label:c,data:months.map(m=>monthTotals[m]?.cats[c]||0),borderColor:CAT_COLORS[c],backgroundColor:'transparent',tension:.3,pointRadius:3,borderWidth:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:12,padding:6}}},scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},beginAtZero:true}}}});
+    const sel=document.getElementById('cat-sel');
+    if(sel.options.length<=1){ activeCatArr.forEach(({c,v})=>{ const o=document.createElement('option');o.value=c;o.textContent=`${c} (${v})`;sel.appendChild(o); }); }
+  }
+
+  if(n==='mapping'){
+    const exact=mappingResults.filter(m=>m.type==='exact'||m.type==='mapped').length;
+    const fuzzy=mappingResults.filter(m=>m.type==='fuzzy').length;
+    const none=mappingResults.filter(m=>m.type==='none').length;
+    document.getElementById('kpi-map').innerHTML=[
+      {l:'Total CS Products',v:mappingResults.length,c:''},
+      {l:'Matched',v:exact,s:(mappingResults.length?(exact/mappingResults.length*100).toFixed(0)+'%':''),c:'green'},
+      {l:'Fuzzy Matched',v:fuzzy,s:'auto-matched',c:'amber'},
+      {l:'No Match',v:none,s:'no sales data',c:'red'},
+    ].map(k=>`<div class="kpi ${k.c}"><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="sub">${k.s||''}</div></div>`).join('');
+    document.getElementById('map-tbody').innerHTML=mappingResults.map(m=>`<tr>
+      <td><strong>${m.cs}</strong></td><td>${m.tickets}</td><td><span class="badge br">${m.pq}</span></td>
+      <td style="color:${m.type==='none'?'#dc2626':'#374151'}">${m.sales}</td>
+      <td>${m.salesItems>0?Math.round(m.salesItems).toLocaleString():'-'}</td>
+      <td><span style="font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;background:${m.type==='exact'||m.type==='mapped'?'#dcfce7':m.type==='fuzzy'?'#fef3c7':'#fee2e2'};color:${m.type==='exact'||m.type==='mapped'?'#15803d':m.type==='fuzzy'?'#b45309':'#b91c1c'}">${m.type==='mapped'?'Pre-mapped':m.type==='exact'?'Exact':m.type==='fuzzy'?'Fuzzy ('+Math.round(m.score*100)+'%)':'No Match'}</span></td>
+    </tr>`).join('');
+  }
+}
+
+function renderMainTbl(data){
+  document.getElementById('main-tbody').innerHTML=data.map((p,i)=>`<tr>
+    <td style="color:#94a3b8;font-size:11px">${i+1}</td>
+    <td><strong>${p.product}</strong></td>
+    <td>${p.tickets}</td>
+    <td>${p.salesItems>0?Math.round(p.salesItems).toLocaleString():'-'}</td>
+    <td class="${pClass(p.ticketRate)}">${p.salesItems>0?fmtP(p.ticketRate):'-'}</td>
+    <td><strong>${p.pq}</strong></td>
+    <td class="${pClass(p.pqRate)}">${p.salesItems>0?fmtP(p.pqRate):'-'}</td>
+    <td style="color:#ef4444">${p.fit}</td>
+    <td style="color:#8b5cf6">${p.nonfit}</td>
+    <td><span class="badge ${p.pq&&p.fit/p.pq>0.5?'br':'bp'}">${p.pq?(p.fit/p.pq*100).toFixed(0):0}%</span></td>
+  </tr>`).join('');
+}
+
+function renderFinalTbl(data,cats){
+  document.getElementById('fin-tbody').innerHTML=data.map(p=>`<tr>
+    <td><strong>${p.product}</strong></td>
+    <td>${p.pq}</td>
+    <td>${p.salesItems>0?Math.round(p.salesItems).toLocaleString():'-'}</td>
+    ${cats.map(c=>{const cnt=p.cats[c]||0;const rate=p.salesItems>0?cnt/p.salesItems:0;return`<td class="${pClass(rate)}">${p.salesItems>0&&cnt>0?fmtP(rate,4):'0'}</td>`;}).join('')}
+    <td class="${pClass(p.pqRate)}"><strong>${p.salesItems>0?fmtP(p.pqRate,4):'0'}</strong></td>
+  </tr>`).join('');
+}
+
+function filterMain(){
+  const q=document.getElementById('srch-main').value.toLowerCase();
+  const d=window._mainData||[];
+  const f=q?d.filter(p=>p.product.toLowerCase().includes(q)):d;
+  document.getElementById('main-cnt').textContent=f.length;
+  renderMainTbl(f);
+}
+
+function filterFinal(){
+  const q=document.getElementById('srch-final').value.toLowerCase();
+  const hz=document.getElementById('hide-zero').checked;
+  let d=window._finalData||[];
+  if(q) d=d.filter(p=>p.product.toLowerCase().includes(q));
+  if(hz) d=d.filter(p=>p.pq>0);
+  renderFinalTbl(d,window._finalCats||ALL_CATS);
+}
+
+function renderCatProds(){
+  const cat=document.getElementById('cat-sel').value;
+  if(!cat||!G) return;
+  const d=[...G.productData].filter(p=>p.cats[cat]>0).sort((a,b)=>(b.cats[cat]||0)-(a.cats[cat]||0)).slice(0,15);
+  document.getElementById('cat-prod-tbody').innerHTML=d.map((p,i)=>`<tr>
+    <td style="color:#94a3b8">${i+1}</td>
+    <td><strong>${p.product}</strong></td>
+    <td><span class="badge br">${p.cats[cat]||0}</span></td>
+    <td>${p.salesItems>0?Math.round(p.salesItems).toLocaleString():'-'}</td>
+    <td class="${pClass(p.salesItems>0?(p.cats[cat]||0)/p.salesItems:0)}">${p.salesItems>0?fmtP((p.cats[cat]||0)/p.salesItems):'-'}</td>
+  </tr>`).join('');
+}
+
+// ─── FILE HANDLERS ────────────────────────────────────────────────────────────
+document.getElementById('f-cs').addEventListener('change',function(e){
   const file=e.target.files[0];if(!file)return;
-  document.getElementById('aa-st').textContent='Loading...';
+  document.getElementById('cs-st').textContent='Loading...';
   readFile(file,(err,rows)=>{
-    if(err){document.getElementById('aa-st').textContent='Error!';return;}
-    aaRows=rows;
-    document.getElementById('aa-st').textContent=rows.length+' rows';
-    document.getElementById('lbl-aa').classList.add('loaded');
-    tryBuild();
+    if(err){document.getElementById('cs-st').textContent='Error!';return;}
+    csData=rows;
+    document.getElementById('cs-st').textContent=rows.length+' rows loaded';
+    document.getElementById('lbl-cs').classList.add('loaded');
+    checkReady();
   });
 });
 
-document.getElementById('f-tkt').addEventListener('change',function(e){
+document.getElementById('f-sales').addEventListener('change',function(e){
   const file=e.target.files[0];if(!file)return;
-  document.getElementById('tkt-st').textContent='Loading...';
+  document.getElementById('sales-st').textContent='Loading...';
   readFile(file,(err,rows)=>{
-    if(err){document.getElementById('tkt-st').textContent='Error!';return;}
-    tktRows=rows;
-    document.getElementById('tkt-st').textContent=rows.length+' rows';
-    document.getElementById('lbl-tkt').classList.add('loaded');
-    tryBuild();
+    if(err){document.getElementById('sales-st').textContent='Error!';return;}
+    salesData=rows;
+    document.getElementById('sales-st').textContent=rows.length+' rows loaded';
+    document.getElementById('lbl-sales').classList.add('loaded');
+    checkReady();
   });
 });
+
+function checkReady(){
+  const btn=document.getElementById('gen-btn');
+  if(csData&&salesData){btn.disabled=false;}
+}
+
+function generate(){
+  if(!csData||!salesData)return;
+  document.getElementById('gen-btn').textContent='Generating...';
+  setTimeout(()=>{
+    G=buildReport(csData,salesData,activeMonth);
+    document.getElementById('no-data').style.display='none';
+    document.getElementById('ov-data').style.display='block';
+    document.getElementById('rpt-sub').textContent=`${G.totalCS.toLocaleString()} tickets | ${G.pqCount.toLocaleString()} PQ complaints | ${Math.round(G.totalSales).toLocaleString()} items sold`;
+    document.getElementById('gen-btn').textContent='Generate Report';
+    renderAll();
+  },100);
+}
 </script>
-
-<div style="text-align:center;padding:18px 10px;color:#94a3b8;font-size:11px;font-weight:600;letter-spacing:.08em">
-  ✨  ✨
-</div>
-
-
-<div style="text-align:center;padding:16px 0 26px;color:#94a3b8;font-size:14px">
-Made in Mars by <strong style="color:#0f172a">CELESTIAL</strong>
-</div>
 </body>
-
-
 </html>
