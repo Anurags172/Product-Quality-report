@@ -58,6 +58,32 @@ table tr:last-child td{border-bottom:none}
 input[type=text]{padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;width:200px}
 select{padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:#fff;cursor:pointer}
 @media(max-width:768px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* ─── FILTER BUTTONS ───────────────── */
+.flt-btn{
+  border:1px solid #e5e7eb;
+  background:#fff;
+  color:#475569;
+  padding:6px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:600;
+  transition:all .2s ease;
+}
+
+.flt-btn:hover{
+  transform:translateY(-1px);
+  border-color:#ef4444;
+  color:#ef4444;
+}
+
+.flt-btn.active{
+  background:#ef4444;
+  border-color:#ef4444;
+  color:#fff;
+}
+
 </style>
 </head>
 <body>
@@ -100,7 +126,19 @@ select{padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px
     <span style="font-size:12px">Master file baked in — no manual mapping needed</span>
   </div>
   <div id="ov-data" style="display:none">
+
+    <div class="info" style="margin-bottom:16px">
+      <strong>Attribution Methodology:</strong>
+      Sales and complaint data are matched using a rolling 6‑day attribution assumption due to unavailable Order IDs in the sales source. This helps estimate product quality complaint rates against likely recent purchases.
+    </div>
+
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:12px;color:#64748b;font-weight:600">View:</span>
+
+      <button class="flt-btn active" onclick="setViewMode('all',this)">Full Upload</button>
+      <button class="flt-btn" onclick="setViewMode('monthly',this)">Monthly</button>
+
+
       <span style="font-size:12px;color:#64748b;font-weight:500">Filter by month:</span>
       <select id="month-sel" onchange="applyFilter()">
         <option value="all">All Months</option>
@@ -372,6 +410,58 @@ function readFile(file,cb){
   reader.readAsArrayBuffer(file);
 }
 
+
+function parseDateSafe(dateStr){
+  if(!dateStr) return null;
+
+  const str = String(dateStr).trim();
+
+  // DD/MM/YYYY
+  if(str.includes('/')){
+    const p = str.split('/');
+    if(p.length >= 2){
+      return {
+        month: parseInt(p[1]) || 0,
+        year: parseInt(p[2]) || new Date().getFullYear()
+      };
+    }
+  }
+
+  // YYYY-MM-DD or ISO
+  if(str.includes('-')){
+    const d = new Date(str);
+    if(!isNaN(d)){
+      return {
+        month: d.getMonth()+1,
+        year: d.getFullYear()
+      };
+    }
+  }
+
+  return null;
+}
+
+let currentViewMode = 'all';
+
+function setViewMode(mode,el){
+  currentViewMode = mode;
+
+  document.querySelectorAll('.flt-btn')
+    .forEach(b=>b.classList.remove('active'));
+
+  el.classList.add('active');
+
+  const sel = document.getElementById('month-sel');
+
+  if(mode==='all'){
+    sel.value='all';
+    activeMonth='all';
+  }
+
+  applyFilter();
+}
+
+
 function buildReport(csRows, salesRows, monthFilter){
   // Build sales map — clean category_l3 name
   const salesMap={};
@@ -382,9 +472,10 @@ function buildReport(csRows, salesRows, monthFilter){
     const items = parseFloat(r['Items']||r['Quantity']||0)||0;
     const dateStr = String(r['date']||r['Date']||r['Month']||'');
     let month=0;
-    if(dateStr.includes('-')){
-      try{ month=new Date(dateStr).getMonth()+1; }catch(e){}
-    } else { month=parseInt(dateStr)||0; }
+    const parsed = parseDateSafe(dateStr);
+    if(parsed){
+      month = parsed.month;
+    }
     if(month) monthsSet.add(month);
     if(!salesMap[raw]) salesMap[raw]={total:0,months:{}};
     if(monthFilter==='all'){ salesMap[raw].total+=items; salesMap[raw].months[month]=(salesMap[raw].months[month]||0)+items; }
@@ -400,7 +491,7 @@ function buildReport(csRows, salesRows, monthFilter){
     const MNAMES={1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'};
     Array.from(monthsSet).sort().forEach(m=>{
       const opt=document.createElement('option');
-      opt.value=m; opt.textContent=MNAMES[m]||'Month '+m;
+      opt.value=m; opt.textContent=(MNAMES[m]||('Month '+m)) + ' 2025';
       sel.appendChild(opt);
     });
   }
@@ -418,11 +509,10 @@ function buildReport(csRows, salesRows, monthFilter){
     const prod = String(r['Subcategory']||r['DW']||r['Custom Sub Product Category']||r['Custom Sub Product Category 1']||'').trim();
     const dateStr = String(r['Created At']||r['date']||r['Date']||r['Months']||'');
     let month=0;
-    if(dateStr.includes('/')){
-      try{ const p=dateStr.split('/'); month=parseInt(p[1]); }catch(e){}
-    } else if(dateStr.includes('-')){
-      try{ month=new Date(dateStr).getMonth()+1; }catch(e){}
-    } else { month=parseInt(dateStr)||0; }
+    const parsed = parseDateSafe(dateStr);
+    if(parsed){
+      month = parsed.month;
+    }
 
     if(monthFilter!=='all' && month!==parseInt(monthFilter)) return;
 
@@ -707,5 +797,18 @@ function generate(){
   },100);
 }
 </script>
+
+<div style="
+text-align:center;
+padding:18px 0 30px;
+font-size:13px;
+color:#94a3b8;
+font-weight:500;
+letter-spacing:.04em;
+">
+Made in Mars by <strong style="color:#0f172a">CELESTIAL</strong>
+</div>
+
 </body>
+
 </html>
